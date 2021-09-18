@@ -1,6 +1,9 @@
 # To add a new cell, type '# %%'
 # To add a new markdown cell, type '# %% [markdown]'
 # %%
+
+from argparse import ArgumentParser
+
 from dataset.helpers.load_data import Load_data
 from dataset.api_football_dataset import ApiFootballDataset
 
@@ -28,11 +31,11 @@ class DataModule(LightningDataModule):
         self.batch_size = batch_size
         self.n_workers = n_workers
 
-    def prepare_data(self):
+    def prepare_data(self, datapath):
         # download, split, etc...
         # only called on 1 GPU/TPU in distributed
 
-        df = Load_data(csv_data_path='../data/').get_data()
+        df = Load_data(csv_data_path=datapath).get_data()
         self.dataset_1 = ApiFootballDataset(dataframe=df, Xy_pair='1',)
         self.dataset_2 = ApiFootballDataset(dataframe=df, Xy_pair='2',)
 
@@ -215,12 +218,18 @@ class LitAutoEncoder(pl.LightningModule):
 
 
 # %%
+# add arguments 
+parser = ArgumentParser()
+parser.add_argument('--datapath', default='..data/', type=str)
+args = parser.parse_args()
 
 # Get parameters
 print('Load data to get neural network features...')
 
+datapath = args.datapath
+
 datamodule = DataModule(n_workers=2)
-datamodule.prepare_data()
+datamodule.prepare_data(datapath=datapath)
 
 
 enc_in_features = len(datamodule.dataset_1[0][0][0])
