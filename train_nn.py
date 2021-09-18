@@ -245,6 +245,6 @@ coder = LitAutoEncoder(enc_in=enc_in_features, enc_out=enc_out_features,
 # most basic trainer, uses good defaults (auto-tensorboard, checkpoints, logs, and more)
 # trainer = pl.Trainer(gpus=8) (if you have GPUs)
 # trainer = Trainer(tpu_cores=1) (if you have TPUs)
-trainer = pl.Trainer(min_epochs=3, max_epochs=30, progress_bar_refresh_rate=1, gpus=2, precision=16)
+trainer = pl.Trainer(min_epochs=3, max_epochs=30, progress_bar_refresh_rate=1, gpus=1, precision=16)
 # precision=16 for GPU/TPU
 trainer.fit(coder, datamodule)
