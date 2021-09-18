@@ -1,5 +1,3 @@
-import pandas as pd
-
 class Features:
     def __init__(self, columns=None):
 
