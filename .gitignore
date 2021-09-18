@@ -7,3 +7,4 @@ cache/*
 dataset/__pycache__/*
 dataset/helpers/__pycache__/*
 lightning_logs/*
+requirements.txt
