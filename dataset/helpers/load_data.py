@@ -1,6 +1,6 @@
 import glob
-from tqdm import tqdm
 from pickle import dump, load
+from tqdm import tqdm
 
 import pandas as pd
 
