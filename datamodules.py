@@ -1,4 +1,5 @@
 from pytorch_lightning.core.datamodule import LightningDataModule
+import torch
 from torch.utils.data import DataLoader, Subset
 from dataset.helpers.load_data import Load_data
 from dataset.api_football_dataset3 import ApiFootballDataset
@@ -16,39 +17,45 @@ class FootballOddsDataModule(LightningDataModule):
 
         df = Load_data(csv_data_path=datapath).get_data()
         # self.dataset_1 = ApiFootballDataset(dataframe=df, dataset='lstm')
-        self.dataset_2 = ApiFootballDataset(dataframe=df)
-
+        self.dataset = ApiFootballDataset(dataframe=df)
 
     def setup(self, stage):
         # make assignments here (val/train/test split)
         # called on every process in DDP
 
-        train_idx = [i for i in range(0, len(self.dataset_2) - 480)]
-        val_idx = [i for i in range(len(self.dataset_2) - 480, len(self.dataset_2) - 240)]
-        test_idx = [i for i in range(len(self.dataset_2) - 240, len(self.dataset_2))]
+        train_idx = [i for i in range(0, len(self.dataset) - 480)]
+        val_idx = [i for i in range(
+            len(self.dataset) - 480, len(self.dataset) - 240)]
+        test_idx = [i for i in range(
+            len(self.dataset) - 240, len(self.dataset))]
 
         # self.train_1 = Subset(self.dataset_1, train_idx)
         # self.val_1 = Subset(self.dataset_1, val_idx)
         # self.test_1 = Subset(self.dataset_1, test_idx)
-        
-        self.train_2 = Subset(self.dataset_2, train_idx)
-        self.val_2 = Subset(self.dataset_2, val_idx)
-        self.test_2 = Subset(self.dataset_2, test_idx)
+
+        self.train = Subset(self.dataset, train_idx)
+        self.val = Subset(self.dataset, val_idx)
+        self.test = Subset(self.dataset, test_idx)
 
     def train_dataloader(self):
         # dataloader_1 = DataLoader(self.train_1, batch_size=self.batch_size, num_workers=self.n_workers, shuffle=False)
-        dataloader_2 = DataLoader(self.train_2, batch_size=self.batch_size, num_workers=self.n_workers, shuffle=False)
-        # return [dataloader_1, dataloader_2]
-        return dataloader_2
+        generator = torch.Generator()
+        generator.manual_seed(42)
+        dataloader = DataLoader(self.train, batch_size=self.batch_size,
+                                num_workers=self.n_workers, shuffle=True, generator=generator)
+        # return [dataloader_1, dataloader]
+        return dataloader
 
     def val_dataloader(self):
         # dataloader_1 = DataLoader(self.val_1, batch_size=self.batch_size, num_workers=self.n_workers, shuffle=False)
-        dataloader_2 = DataLoader(self.val_2, batch_size=self.batch_size, num_workers=self.n_workers, shuffle=False)
-        # return [dataloader_1, dataloader_2]
-        return dataloader_2
+        dataloader = DataLoader(
+            self.val, batch_size=self.batch_size, num_workers=self.n_workers, shuffle=False)
+        # return [dataloader_1, dataloader]
+        return dataloader
 
     def test_dataloader(self):
         # dataloader_1 = DataLoader(self.test_1, batch_size=self.batch_size, num_workers=self.n_workers, shuffle=False)
-        dataloader_2 = DataLoader(self.test_2, batch_size=self.batch_size, num_workers=self.n_workers, shuffle=False)
-        # return [dataloader_1, dataloader_2]
-        return dataloader_2
+        dataloader = DataLoader(
+            self.test, batch_size=self.batch_size, num_workers=self.n_workers, shuffle=False)
+        # return [dataloader_1, dataloader]
+        return dataloader
