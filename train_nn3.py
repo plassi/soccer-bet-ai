@@ -18,7 +18,7 @@ parser.add_argument('--test_only', default=None, type=bool)
 parser.add_argument('--early_stopping', default=False, type=bool)
 parser.add_argument('--gpus', default=0, type=int)
 parser.add_argument('--datapath', default='../data/', type=str)
-parser.add_argument('--batch_size', default=8, type=int)
+parser.add_argument('--batch_size', default=32, type=int)
 parser.add_argument('--n_workers', default=4, type=int)
 parser.add_argument('--lr', default=2e-5, type=float)
 parser.add_argument('--min_epochs', default=0, type=int)
@@ -34,7 +34,7 @@ datamodule.prepare_data(datapath=args.datapath)
 # init model
 
 if args.ck_path is None:
-    model = FootballOddsDecoder(datamodule, batch_size=args.batch_size, learning_rate=args.lr,)
+    model = FootballOddsDecoder(batch_size=args.batch_size, learning_rate=args.lr,)
 
 
 # Select training or testing loop from arguments
