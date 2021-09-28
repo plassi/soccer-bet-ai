@@ -43,7 +43,7 @@ class FootballOddsDecoder(pl.LightningModule):
         # Logging to TensorBoard by default
         self.log("train/loss/ff", loss_ff)
         self.log("learning_rate", self.lr)
-        self.log("batch_size:", self.batch_size)
+        self.log("batch_size", self.batch_size)
         self.log("dropout", self.dropout)
 
         return loss_ff
