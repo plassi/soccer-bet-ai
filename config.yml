@@ -10,9 +10,9 @@ compute:
 
     cpus: 4                       # Number of CPUs
     gpus: 1                       # Number of GPUs
-    instance: g4dn.xlarge           # AWS instance type
-    memory: 16                  # RAM memory
-    nodes: 1                      # Nodes to start with
+    instance: g3s.xlarge           # AWS instance type
+    memory: 32                  # RAM memory
+    nodes: 0                      # Nodes to start with
     scale_down_seconds: 1800      # Second in between every scaling down evaluation
     datastore_name: data          # Datastore name to use 
     datastore_version: 2       # Datastore version number
