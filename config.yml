@@ -1,3 +1,15 @@
+compute:
+
+  train:
+
+    cpus: 4                       # Number of CPUs
+    gpus: 1                       # Number of GPUs
+    instance: g4dn.xlarge           # AWS instance type
+    memory: null                  # RAM memory
+    nodes: 0                      # Nodes to start with
+    scale_down_seconds: 1800      # Second in between every scaling down evaluation
+
+
 actions:
   on_image_build:
     - pip install -U scikit-learn
