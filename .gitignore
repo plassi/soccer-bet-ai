@@ -4,7 +4,6 @@ test-dataset.ipynb
 your_new_file.txt
 .ipynb_checkpoints/*
 __pycache__/*
-cache/*
 dataset/__pycache__/*
 dataset/helpers/__pycache__/*
 lightning_logs/*
@@ -21,3 +20,4 @@ testi.py
 train_nn.py
 train_nn2.py
 dataset/api_football_dataset.py
+cache/dataframe.pkl
