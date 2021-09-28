@@ -1,5 +1,26 @@
 compute:
+
+  provider:
+
+    credentials: XXXXXX           # Cloud key ID
+    region: us-east-1             # Cloud region
+    vendor: aws                   # Vendor, only aws
+  
   train:
+
+    cpus: 4                       # Number of CPUs
+    gpus: 1                       # Number of GPUs
+    instance: g4dn.xlarge           # AWS instance type
+    memory: null                  # RAM memory
+    nodes: 0                      # Nodes to start with
+    scale_down_seconds: 1800      # Second in between every scaling down evaluation
+    datastore_name: data          # Datastore name to use 
+    datastore_version: 2       # Datastore version number
+    datastore_mount_dir: /datastores/data     # Where to mount the datastore
+    use_spot: true               # If we should use spot instances
+    framework: "lightning"        # Which framework to use 
+
+
     actions:
       on_image_build:
         - apt-get update
