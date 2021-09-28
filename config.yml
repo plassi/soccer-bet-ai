@@ -2,7 +2,7 @@ compute:
 
   provider:
 
-    # credentials: XXXXXX           # Cloud key ID
+    credentials: XXXXXX           # Cloud key ID
     region: us-east-1             # Cloud region
     vendor: aws                   # Vendor, only aws
   
