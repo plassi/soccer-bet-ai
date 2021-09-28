@@ -1,0 +1,6 @@
+compute:
+  train:
+    actions:
+      on_image_build:
+        - apt-get update
+        - apt install -y scikit-learn
