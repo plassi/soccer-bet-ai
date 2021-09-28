@@ -1,3 +1,4 @@
+.gitignore
 create_dataset_csv.py
 test-dataset.ipynb
 your_new_file.txt
@@ -7,4 +8,17 @@ cache/*
 dataset/__pycache__/*
 dataset/helpers/__pycache__/*
 lightning_logs/*
-requirements.txt
+*.txt
+grid_artifacts/*
+inference_test_data/39_premiere_league_england_2015_2020.csv
+dataset/api_football_dataset.py
+.vscode/*
+*.ckpt
+*.ipynb
+neuralnet.py
+neuralnet2.py
+testi.py
+train_nn.py
+train_nn2.py
+cache/readme.MD
+dataset/api_football_dataset.py
