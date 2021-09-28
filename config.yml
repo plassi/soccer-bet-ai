@@ -1,4 +1,3 @@
-compute:
-    actions:
-      on_image_build:
-        - pip install -U scikit-learn
+actions:
+  on_image_build:
+    - pip install -U scikit-learn
