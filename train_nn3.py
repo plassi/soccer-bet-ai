@@ -44,13 +44,13 @@ if (args.ck_path is None) and (args.test_only is None) and (args.gpus == 0) and 
     trainer = pl.Trainer(min_epochs=args.min_epochs, max_epochs=args.max_epochs)
     # trainer.tune(model, datamodule)
     trainer.fit(model, datamodule)
-    trainer.test(model, datamodule)
+    # trainer.test(model, datamodule)
 
 elif (args.ck_path is None) and (args.test_only is None) and (args.gpus > 0) and (args.early_stopping is False):
     # train
     trainer = pl.Trainer(min_epochs=args.min_epochs, max_epochs=args.max_epochs, gpus=args.gpus)
     trainer.fit(model, datamodule)
-    trainer.test(model, datamodule)
+    # trainer.test(model, datamodule)
 
 # elif (args.ck_path is not None) and (args.test_only is not None):
 #     # load model and test it

@@ -25,16 +25,15 @@ class ApiFootballDataset(Dataset):
 
         # ignore SettingWithCopyWarning
         warnings.simplefilter(action="ignore", category=SettingWithCopyWarning)
-        frame = dataframe
+
 
         # Set features
-        features = Features(columns=frame.columns)
+        features = Features(columns=dataframe.columns)
 
-        self.X_data = frame[features.ff_input_features + features.players_features]
+        self.players_df = dataframe[features.players_features]
+        self.predictions_df = dataframe[features.ff_input_features]
+        # self.X_data = frame[features.players_features + features.ff_input_features]
 
-
-
-       
 
         #########################################################################
         #
@@ -46,14 +45,8 @@ class ApiFootballDataset(Dataset):
 
         # Create X_ordinal_data_pipeline
 
-        X_data_pipeline_01 = make_pipeline(
-            impute.SimpleImputer(strategy='constant',
-                                fill_value=0, add_indicator=True),
-            preprocessing.MinMaxScaler(),
-            verbose=1,
-        )
         
-        X_data_pipeline_02 = make_pipeline(
+        self.X_data_pipeline_players = make_pipeline(
             impute.SimpleImputer(strategy='constant',
                                 fill_value=np.nan, add_indicator=False),
             preprocessing.OneHotEncoder(handle_unknown='ignore', sparse=True),
@@ -61,16 +54,25 @@ class ApiFootballDataset(Dataset):
         )
 
 
-
-        # Compose master X_data_pipeline
-        self.X_data_pipeline = compose.make_column_transformer(
-            (X_data_pipeline_01, features.ff_input_features),
-            (X_data_pipeline_02, features.players_features),
+        self.X_data_pipeline_predictions = make_pipeline(
+            impute.SimpleImputer(strategy='constant',
+                                fill_value=0, add_indicator=True),
+            preprocessing.MinMaxScaler(),
+            verbose=1,
         )
-        # Fit X_data_pipeline
-        self.X_data_pipeline = self.X_data_pipeline.fit(self.X_data)
 
-        print("X_data_pipeline created")
+        # # Compose master X_data_pipeline
+        # self.X_data_pipeline = compose.make_column_transformer(
+        #     (X_data_pipeline_01, features.ff_input_features),
+        #     (X_data_pipeline_02, features.players_features),
+        # )
+        # # Fit X_data_pipeline
+        # self.X_data_pipeline = self.X_data_pipeline.fit(self.X_data)
+
+        # print("X_data_pipeline created")
+
+        self.X_data_pipeline_players = self.X_data_pipeline_players.fit(self.players_df)
+        self.X_data_pipeline_predictions = self.X_data_pipeline_predictions.fit(self.predictions_df)
 
 
 
@@ -84,7 +86,7 @@ class ApiFootballDataset(Dataset):
         self.y_data = []
 
 
-        for data in frame['teams_home_winner']:
+        for data in dataframe['teams_home_winner']:
             if data != data:
                 self.y_data.append([0, 1, 0])
             if data == 'True':
@@ -100,18 +102,24 @@ class ApiFootballDataset(Dataset):
 
     def __len__(self):
 
-        return len(self.X_data)
+        return len(self.players_df)
 
 
     def __getitem__(self, idx):
 
-        X_numpy = self.X_data_pipeline.transform(
-            pd.DataFrame(self.X_data.iloc[idx]).transpose()
+        players_X_numpy = self.X_data_pipeline_players.transform(
+            pd.DataFrame(self.players_df.iloc[idx]).transpose()
         )
-        X_numpy = X_numpy.astype('float32')
+        players_X_numpy = players_X_numpy.astype('float32')
 
-        X_torch = torch.from_numpy(X_numpy.toarray())
+        predictions_X_numpy = self.X_data_pipeline_predictions.transform(
+            pd.DataFrame(self.predictions_df.iloc[idx]).transpose()
+        )
+        predictions_X_numpy = predictions_X_numpy.astype('float32')
+
+        players_X_torch = torch.from_numpy(players_X_numpy.toarray())
+        predictions_X_torch = torch.from_numpy(predictions_X_numpy)
         y_numpy = torch.from_numpy(np.array([self.y_data[idx]]))
 
-        return X_torch, y_numpy
+        return players_X_torch, predictions_X_torch, y_numpy
        

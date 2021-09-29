@@ -1,3 +1,5 @@
+import math
+
 from pytorch_lightning.core.datamodule import LightningDataModule
 import torch
 from torch.utils.data import DataLoader, Subset
@@ -23,11 +25,12 @@ class FootballOddsDataModule(LightningDataModule):
         # make assignments here (val/train/test split)
         # called on every process in DDP
 
-        train_idx = [i for i in range(0, len(self.dataset) - 480)]
+        train_idx = [i for i in range(
+            0, len(self.dataset) - math.ceil(len(self.dataset) * 0.2))]
         val_idx = [i for i in range(
-            len(self.dataset) - 480, len(self.dataset) - 240)]
-        test_idx = [i for i in range(
-            len(self.dataset) - 240, len(self.dataset))]
+            math.ceil(len(self.dataset) * 0.2), len(self.dataset))]
+        # test_idx = [i for i in range(
+        #     len(self.dataset) - 240, len(self.dataset))]
 
         # self.train_1 = Subset(self.dataset_1, train_idx)
         # self.val_1 = Subset(self.dataset_1, val_idx)
@@ -35,7 +38,7 @@ class FootballOddsDataModule(LightningDataModule):
 
         self.train = Subset(self.dataset, train_idx)
         self.val = Subset(self.dataset, val_idx)
-        self.test = Subset(self.dataset, test_idx)
+        # self.test = Subset(self.dataset, test_idx)
 
     def train_dataloader(self):
         # dataloader_1 = DataLoader(self.train_1, batch_size=self.batch_size, num_workers=self.n_workers, shuffle=False)
@@ -53,9 +56,9 @@ class FootballOddsDataModule(LightningDataModule):
         # return [dataloader_1, dataloader]
         return dataloader
 
-    def test_dataloader(self):
-        # dataloader_1 = DataLoader(self.test_1, batch_size=self.batch_size, num_workers=self.n_workers, shuffle=False)
-        dataloader = DataLoader(
-            self.test, batch_size=self.batch_size, num_workers=self.n_workers, shuffle=False)
-        # return [dataloader_1, dataloader]
-        return dataloader
+    # def test_dataloader(self):
+    #     # dataloader_1 = DataLoader(self.test_1, batch_size=self.batch_size, num_workers=self.n_workers, shuffle=False)
+    #     dataloader = DataLoader(
+    #         self.test, batch_size=self.batch_size, num_workers=self.n_workers, shuffle=False)
+    #     # return [dataloader_1, dataloader]
+    #     return dataloader
