@@ -9,61 +9,63 @@ class FootballOddsDecoder(pl.LightningModule):
     def __init__(self, batch_size, learning_rate):
         super().__init__()
 
+        # print("Initializing LSTM")
+
         self.lr = learning_rate
         self.batch_size = batch_size
         self.dropout = 0.2
 
-        # Pool players data to 48 features
-        self.pool = nn.Sequential(
-            nn.AdaptiveAvgPool1d(48),
-        )
-
         self.ff = nn.Sequential(
-            nn.Linear(in_features=173, out_features=128),
+            nn.Linear(in_features=59325, out_features=1024),
             nn.Dropout(self.dropout),
             nn.ReLU(),
-            nn.Linear(in_features=128, out_features=3),
+            nn.Linear(in_features=1024, out_features=64),
+            nn.Dropout(self.dropout),
+            nn.ReLU(),
+            nn.Linear(in_features=64, out_features=3),
             nn.ReLU(),
         )
 
         
 
-    def forward(self, X1, X2):
-
-        X1_pooled = self.pool(X1)
-        X = torch.cat((X1_pooled, X2), dim=2)
+    def forward(self, X):
 
         return self.ff(X)
 
     def training_step(self, batch, batch_idx):
 
-        X1, X2, y = batch[0], batch[1], batch[2]
 
-        y_ff_hat = self.forward(X1, X2)
+        X, y = batch[0], batch[1]
 
-        loss_ff = F.mse_loss(y_ff_hat, y.float())
+        self.y_ff_hat = self.ff(X)
+
+        loss_ff = F.mse_loss(self.y_ff_hat, y.float())
 
         # Logging to TensorBoard by default
         self.log("train/loss/ff", loss_ff)
-        self.log("learning_rate", self.lr)
-        self.log("batch_size", self.batch_size)
-        self.log("dropout", self.dropout)
+        self.log("hyperparams/learning_rate", self.lr)
+        self.log("hyperparams/batch_size", self.batch_size)
+        self.log("hyperparams/dropout", self.dropout)
 
         return loss_ff
 
+    # def training_epoch_end(self, outputs) -> None:
+    #     print(self.y_ff_hat)
 
     # Create validation step
     def validation_step(self, batch, batch_idx):
 
-        X1, X2, y = batch[0], batch[1], batch[2]
+        X, y = batch[0], batch[1]
 
-        y_ff_hat = self.forward(X1, X2)
+        y_ff_hat = self.ff(X)
 
         loss_ff = F.mse_loss(y_ff_hat, y.float())
+        print("val/loss/ff", loss_ff)
         self.log("val/loss/ff", loss_ff)
         
 
-    # # Create test step
+    # Create test step
+    
     # def test_step(self, batch, batch_idx):
 
     #     X, y = batch[0], batch[1]
