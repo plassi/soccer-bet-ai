@@ -68,7 +68,7 @@ class FootballOddsDecoder(pl.LightningModule):
         
         avg_loss = torch.stack([x['loss'] for x in outputs]).mean()
 
-        print("avg_loss:", avg_loss)
+        print(f"\navg_loss: {avg_loss.item()}\n")
 
         return {'val_loss': avg_loss, 'log': {'val_loss': avg_loss}}
         
