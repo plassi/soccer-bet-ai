@@ -42,10 +42,7 @@ class FootballOddsDecoder(pl.LightningModule):
         loss_ff = F.mse_loss(self.y_ff_hat, y.float())
 
         # Logging to TensorBoard by default
-        self.log("train/loss/ff", loss_ff)
-        self.log("hyperparams/learning_rate", self.lr)
-        self.log("hyperparams/batch_size", self.batch_size)
-        self.log("hyperparams/dropout", self.dropout)
+        self.log("train_loss", loss_ff)
 
         return loss_ff
 
@@ -60,8 +57,20 @@ class FootballOddsDecoder(pl.LightningModule):
         y_ff_hat = self.ff(X)
 
         loss_ff = F.mse_loss(y_ff_hat, y.float())
-        print("val/loss/ff", loss_ff)
-        self.log("val/loss/ff", loss_ff)
+        
+        return {"loss": loss_ff}
+
+    def validation_epoch_end(self, outputs):
+        
+        self.log("hp_learning_rate", self.lr)
+        self.log("hp_batch_size", self.batch_size)
+        self.log("hp_dropout", self.dropout)
+        
+        avg_loss = torch.stack([x['loss'] for x in outputs]).mean()
+
+        print("avg_loss:", avg_loss)
+
+        return {'val_loss': avg_loss, 'log': {'val_loss': avg_loss}}
         
 
     # Create test step
