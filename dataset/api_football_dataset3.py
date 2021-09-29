@@ -55,7 +55,7 @@ class ApiFootballDataset(Dataset):
         
         X_data_pipeline_02 = make_pipeline(
             impute.SimpleImputer(strategy='constant',
-                                fill_value=np.nan, add_indicator=False),
+                                fill_value=np.nan, add_indicator=True),
             preprocessing.OneHotEncoder(handle_unknown='ignore', sparse=True),
             verbose=1,
         )
