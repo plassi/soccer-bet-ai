@@ -6,14 +6,14 @@ import pytorch_lightning as pl
 
 # %%
 class FootballOddsDecoder(pl.LightningModule):
-    def __init__(self, batch_size, learning_rate):
+    def __init__(self, batch_size, learning_rate, dropout):
         super().__init__()
 
         # print("Initializing LSTM")
 
         self.lr = learning_rate
         self.batch_size = batch_size
-        self.dropout = 0.2
+        self.dropout = dropout
 
         self.ff = nn.Sequential(
             nn.Linear(in_features=59369, out_features=1024),

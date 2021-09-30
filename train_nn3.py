@@ -22,6 +22,7 @@ parser.add_argument('--n_workers', default=4, type=int)
 parser.add_argument('--lr', default=2e-5, type=float)
 parser.add_argument('--min_epochs', default=0, type=int)
 parser.add_argument('--max_epochs', default=1000, type=int)
+parser.add_argument('--dropout', default=0.2, type=float)
 args = parser.parse_args()
 
 # Get parameters
@@ -35,7 +36,7 @@ datamodule.prepare_data(datapath=args.datapath)
 
 if args.ck_path is None:
     model = FootballOddsDecoder(
-        batch_size=args.batch_size, learning_rate=args.lr,)
+        batch_size=args.batch_size, learning_rate=args.lr, dropout=args.dropout)
 elif args.ck_path is not None:
     model = FootballOddsDecoder.load_from_checkpoint(
         checkpoint_path=args.ck_path,
@@ -43,6 +44,7 @@ elif args.ck_path is not None:
         datamodule=datamodule,
         batch_size=args.batch_size,
         learning_rate=args.lr,
+        dropout=args.dropout
     )
 
 
