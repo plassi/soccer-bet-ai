@@ -16,7 +16,7 @@ class FootballOddsDecoder(pl.LightningModule):
         self.dropout = dropout
 
         self.ff = nn.Sequential(
-            nn.Linear(in_features=6646, out_features=1024),
+            nn.Linear(in_features=59369, out_features=1024),
             nn.Dropout(self.dropout),
             nn.ReLU(),
             nn.Linear(in_features=1024, out_features=64),
