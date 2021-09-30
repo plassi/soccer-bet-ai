@@ -18,7 +18,6 @@ class FootballOddsDataModule(LightningDataModule):
         # only called on 1 GPU/TPU in distributed
 
         df = Load_data(csv_data_path=datapath).get_data()
-        # self.dataset_1 = ApiFootballDataset(dataframe=df, dataset='lstm')
         self.dataset = ApiFootballDataset(dataframe=df)
 
     def setup(self, stage):
@@ -32,28 +31,20 @@ class FootballOddsDataModule(LightningDataModule):
         # test_idx = [i for i in range(
         #     len(self.dataset) - 240, len(self.dataset))]
 
-        # self.train_1 = Subset(self.dataset_1, train_idx)
-        # self.val_1 = Subset(self.dataset_1, val_idx)
-        # self.test_1 = Subset(self.dataset_1, test_idx)
-
         self.train = Subset(self.dataset, train_idx)
         self.val = Subset(self.dataset, val_idx)
         # self.test = Subset(self.dataset, test_idx)
 
     def train_dataloader(self):
-        # dataloader_1 = DataLoader(self.train_1, batch_size=self.batch_size, num_workers=self.n_workers, shuffle=False)
         generator = torch.Generator()
         generator.manual_seed(42)
         dataloader = DataLoader(self.train, batch_size=self.batch_size,
                                 num_workers=self.n_workers, shuffle=True, generator=generator)
-        # return [dataloader_1, dataloader]
         return dataloader
 
     def val_dataloader(self):
-        # dataloader_1 = DataLoader(self.val_1, batch_size=self.batch_size, num_workers=self.n_workers, shuffle=False)
         dataloader = DataLoader(
             self.val, batch_size=self.batch_size, num_workers=self.n_workers, shuffle=False, drop_last=True)
-        # return [dataloader_1, dataloader]
         return dataloader
 
     # def test_dataloader(self):

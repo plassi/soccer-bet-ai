@@ -8,13 +8,12 @@ from datamodules import FootballOddsDataModule
 from argparse import ArgumentParser
 
 
-
 # %%
-# add arguments 
+# add arguments
 parser = ArgumentParser()
 parser.add_argument('--ck_path', default=None, type=str)
 parser.add_argument('--hparams_file', default=None, type=str)
-parser.add_argument('--test_only', default=None, type=bool)
+parser.add_argument('--test_only', default=False, type=bool)
 parser.add_argument('--early_stopping', default=False, type=bool)
 parser.add_argument('--gpus', default=0, type=int)
 parser.add_argument('--datapath', default='../data/', type=str)
@@ -28,36 +27,40 @@ args = parser.parse_args()
 # Get parameters
 print('Load data to get neural network features...')
 
-datamodule = FootballOddsDataModule(batch_size=args.batch_size, n_workers=args.n_workers)
+datamodule = FootballOddsDataModule(
+    batch_size=args.batch_size, n_workers=args.n_workers)
 datamodule.prepare_data(datapath=args.datapath)
 
 # init model
 
 if args.ck_path is None:
-    model = FootballOddsDecoder(batch_size=args.batch_size, learning_rate=args.lr,)
+    model = FootballOddsDecoder(
+        batch_size=args.batch_size, learning_rate=args.lr,)
+elif args.ck_path is not None:
+    model = FootballOddsDecoder.load_from_checkpoint(
+        checkpoint_path=args.ck_path,
+        hparams_file=args.hparams_file,
+        datamodule=datamodule,
+        batch_size=args.batch_size,
+        learning_rate=args.lr,
+    )
 
 
 # Select training or testing loop from arguments
 
-if (args.ck_path is None) and (args.test_only is None) and (args.gpus == 0) and (args.early_stopping is False):
+if (args.test_only is False) and (args.early_stopping is False):
     # train
-    trainer = pl.Trainer(min_epochs=args.min_epochs, max_epochs=args.max_epochs)
-    # trainer.tune(model, datamodule)
+    trainer = pl.Trainer(min_epochs=args.min_epochs,
+                         max_epochs=args.max_epochs,
+                         progress_bar_refresh_rate=4,
+                         gpus=args.gpus)
     trainer.fit(model, datamodule)
-    # trainer.test(model, datamodule)
 
-elif (args.ck_path is None) and (args.test_only is None) and (args.gpus > 0) and (args.early_stopping is False):
-    # train
-    trainer = pl.Trainer(min_epochs=args.min_epochs, max_epochs=args.max_epochs, gpus=args.gpus, progress_bar_refresh_rate=4)
+elif (args.test_only is False) and (args.early_stopping is False):
+    # load model and test it
+
+    trainer = pl.Trainer(min_epochs=args.min_epochs,
+                         max_epochs=args.max_epochs,
+                         progress_bar_refresh_rate=4,
+                         gpus=args.gpus)
     trainer.fit(model, datamodule)
-    # trainer.test(model, datamodule)
-
-# elif (args.ck_path is not None) and (args.test_only is not None):
-#     # load model and test it
-#     model = LitAutoEncoder.load_from_checkpoint(
-#         checkpoint_path=args.ck_path,
-#         hparams_file=args.hparams_file,
-#         datamodule=datamodule,
-#     )
-#     trainer = pl.Trainer()
-#     result = trainer.test(model, datamodule)
