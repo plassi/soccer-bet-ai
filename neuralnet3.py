@@ -58,7 +58,7 @@ class FootballOddsDecoder(pl.LightningModule):
 
         loss_ff = F.mse_loss(y_ff_hat, y.float())
         
-        return {"loss": loss_ff}
+        return {"loss": loss_ff, "y": y_ff_hat}
 
     def validation_epoch_end(self, outputs):
         
@@ -67,6 +67,32 @@ class FootballOddsDecoder(pl.LightningModule):
         self.log("hp_dropout", self.dropout)
         
         avg_loss = torch.stack([x['loss'] for x in outputs]).mean()
+
+        # count mean and deviations from the mean for every column in each "y" in output
+        y_ff_hat = torch.stack([x['y'] for x in outputs]).mean(dim=0)
+        y_ff_std = torch.stack([x['y'] for x in outputs]).std(dim=0)
+
+        # count single mean and deviation for every column in "y" in output
+        y_ff_hat_mean = y_ff_hat.mean(dim=0)
+        y_ff_std_mean = y_ff_std.mean(dim=0)
+
+        print(f"\n1 mean: {y_ff_hat_mean[0][0]}")
+        print(f"X mean: {y_ff_hat_mean[0][1]}")
+        print(f"2 mean: {y_ff_hat_mean[0][2]}")
+
+        print(f"1 std: {y_ff_std_mean[0][0]}")
+        print(f"X std: {y_ff_std_mean[0][1]}")
+        print(f"2 std: {y_ff_std_mean[0][2]}")
+
+        self.log("val_1_mean", y_ff_hat_mean[0][0])
+        self.log("val_X_mean", y_ff_hat_mean[0][1])
+        self.log("val_2_mean", y_ff_hat_mean[0][2])
+
+        self.log("val_1_std", y_ff_std_mean[0][0])
+        self.log("val_X_std", y_ff_std_mean[0][1])
+        self.log("val_2_std", y_ff_std_mean[0][2])
+
+        self.log("val_loss", avg_loss)
 
         print(f"\navg_loss: {avg_loss.item()}\n")
 
