@@ -51,7 +51,7 @@ elif args.ck_path is not None:
 
 checkpoint_callback = ModelCheckpoint(
     monitor="val_loss",
-    save_top_k=10,
+    save_top_k=20,
     mode="min",
 )
 
