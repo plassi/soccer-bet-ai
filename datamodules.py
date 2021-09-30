@@ -26,9 +26,9 @@ class FootballOddsDataModule(LightningDataModule):
         # called on every process in DDP
 
         train_idx = [i for i in range(
-            0, len(self.dataset) - math.ceil(len(self.dataset) * 0.2))]
+            0, math.ceil(len(self.dataset) * 0.8))]
         val_idx = [i for i in range(
-            math.ceil(len(self.dataset) * 0.2), len(self.dataset))]
+            math.ceil(len(self.dataset) * 0.8), len(self.dataset))]
         # test_idx = [i for i in range(
         #     len(self.dataset) - 240, len(self.dataset))]
 
@@ -52,7 +52,7 @@ class FootballOddsDataModule(LightningDataModule):
     def val_dataloader(self):
         # dataloader_1 = DataLoader(self.val_1, batch_size=self.batch_size, num_workers=self.n_workers, shuffle=False)
         dataloader = DataLoader(
-            self.val, batch_size=self.batch_size, num_workers=self.n_workers, shuffle=False)
+            self.val, batch_size=self.batch_size, num_workers=self.n_workers, shuffle=False, drop_last=True)
         # return [dataloader_1, dataloader]
         return dataloader
 
