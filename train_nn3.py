@@ -2,6 +2,7 @@
 # To add a new markdown cell, type '# %% [markdown]'
 # %%
 import pytorch_lightning as pl
+from pytorch_lightning.callbacks import ModelCheckpoint
 from neuralnet3 import FootballOddsDecoder
 from datamodules import FootballOddsDataModule
 
@@ -48,6 +49,13 @@ elif args.ck_path is not None:
     )
 
 
+checkpoint_callback = ModelCheckpoint(
+    monitor="val_loss",
+    save_top_k=10,
+    mode="min",
+)
+
+
 # Select training or testing loop from arguments
 
 if (args.test_only is False) and (args.early_stopping is False):
@@ -55,7 +63,8 @@ if (args.test_only is False) and (args.early_stopping is False):
     trainer = pl.Trainer(min_epochs=args.min_epochs,
                          max_epochs=args.max_epochs,
                          progress_bar_refresh_rate=4,
-                         gpus=args.gpus)
+                         gpus=args.gpus,
+                         callbacks=[checkpoint_callback])
     trainer.fit(model, datamodule)
 
 elif (args.test_only is False) and (args.early_stopping is False):
@@ -64,5 +73,6 @@ elif (args.test_only is False) and (args.early_stopping is False):
     trainer = pl.Trainer(min_epochs=args.min_epochs,
                          max_epochs=args.max_epochs,
                          progress_bar_refresh_rate=4,
-                         gpus=args.gpus)
+                         gpus=args.gpus,
+                         callbacks=[checkpoint_callback])
     trainer.fit(model, datamodule)
