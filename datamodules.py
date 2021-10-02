@@ -18,7 +18,7 @@ class FootballOddsDataModule(LightningDataModule):
         # only called on 1 GPU/TPU in distributed
 
         df = Load_data(csv_data_path=datapath).get_data()
-        self.dataset = ApiFootballDataset(dataframe=df)
+        self.dataset = ApiFootballDataset(df=df)
 
     def setup(self, stage):
         # make assignments here (val/train/test split)

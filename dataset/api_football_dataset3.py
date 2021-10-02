@@ -1,14 +1,17 @@
 import pandas as pd
 import numpy as np
 
+import torch
 from torch.utils.data.dataset import Dataset
 from sklearn import preprocessing, impute, compose
 from sklearn.pipeline import make_pipeline
-import torch
+from sklearn.pipeline import Pipeline as pipe
+from feature_engine.encoding import WoEEncoder, RareLabelEncoder, woe
+from feature_engine.imputation import CategoricalImputer, AddMissingIndicator
 import warnings
 from pandas.core.common import SettingWithCopyWarning
 
-from .helpers.features2 import Features
+from .helpers.features3 import Features
 
 
 class ApiFootballDataset(Dataset):
@@ -16,7 +19,7 @@ class ApiFootballDataset(Dataset):
     Dataset for API Football dataset.
     """
 
-    def __init__(self, dataframe):
+    def __init__(self, df):
         """
         Args:
             csv_path (str): path to csv file
@@ -25,66 +28,52 @@ class ApiFootballDataset(Dataset):
 
         # ignore SettingWithCopyWarning
         warnings.simplefilter(action="ignore", category=SettingWithCopyWarning)
-        frame = dataframe
+        self.features = Features()
 
-        # Set features
-        features = Features(columns=frame.columns)
+        self.df = df
 
-        self.X_data = frame[features.ff_input_features + features.players_features]
+        # Arrange frame by fixture_date
+        self.df = self.df.sort_values(by=['fixture_date'])
 
+        # Select wanted features only
 
-
-       
+        self.df = df[self.features.WoEencode +
+                     self.features.onehotencode + self.features.numerical]
 
         #########################################################################
         #
         #   Create X_data transformers
         #
         #########################################################################
-            
+
         print('Creating data pipelines...')
 
-        # Create X_ordinal_data_pipeline
-
-        X_data_pipeline_01 = make_pipeline(
+        # Create Numerical data pipeline
+        numerical_pipeline = make_pipeline(
             impute.SimpleImputer(strategy='constant',
-                                fill_value=0, add_indicator=True),
+                                 fill_value=0, add_indicator=True),
             preprocessing.MinMaxScaler(),
             verbose=1,
         )
-        
-        X_data_pipeline_02 = make_pipeline(
+
+        # Create onehotencode data pipeline
+        onehotencode_pipeline = make_pipeline(
             impute.SimpleImputer(strategy='constant',
-                                fill_value=np.nan, add_indicator=True),
+                                 fill_value=np.nan, add_indicator=True),
             preprocessing.OneHotEncoder(handle_unknown='ignore', sparse=True),
             verbose=1,
         )
 
-
-
-        # Compose master X_data_pipeline
-        self.X_data_pipeline = compose.make_column_transformer(
-            (X_data_pipeline_01, features.ff_input_features),
-            (X_data_pipeline_02, features.players_features),
-        )
-        # Fit X_data_pipeline
-        self.X_data_pipeline = self.X_data_pipeline.fit(self.X_data)
-
-        print("X_data_pipeline created")
-
-
-
         ##########################################################################
         #
-        #   Create y_data transformers
+        #   Create y_data
         #
         ##########################################################################
 
         # print(Xy_data['teams_home_winner'])
         self.y_data = []
 
-
-        for data in frame['teams_home_winner']:
+        for data in df['teams_home_winner']:
             if data != data:
                 self.y_data.append([0, 1, 0])
             if data == 'True':
@@ -92,21 +81,49 @@ class ApiFootballDataset(Dataset):
             if data == 'False':
                 self.y_data.append([0, 0, 1])
 
-        # print(self.y_data)
+        ##########################################################################
+
+        #   Create WoE encoder
+
+        ##########################################################################
+
+        # print('Creating WoE encoder...')
+
+        woe_pipeline = pipe([
+            ('label_encoder', RareLabelEncoder(
+                tol=0.001, n_categories=100, ignore_format=True)),
+            ('missing_indicators', AddMissingIndicator()),
+            ('categorical_imputer', CategoricalImputer()),
+            ('woe_encoder', WoEEncoder(ignore_format=True)),
+            ('min_max_scaler', preprocessing.MinMaxScaler(),)
+        ], verbose=True,)
+
+        # Compose master X_data_pipeline
+        self.X_data_pipeline = compose.make_column_transformer(
+            (numerical_pipeline, self.features.numerical),
+            (onehotencode_pipeline, self.features.onehotencode),
+            (woe_pipeline, self.features.WoEencode),
+        )
 
 
+        ##########################################################################
+
+        # Fit X_data_pipeline
+        self.X_data_pipeline = self.X_data_pipeline.fit(
+            self.df, np.array(self.y_data)[:, 0])
+
+        print("X_data_pipeline created")
 
     #########################################################################
 
     def __len__(self):
 
-        return len(self.X_data)
-
+        return len(self.df)
 
     def __getitem__(self, idx):
 
         X_numpy = self.X_data_pipeline.transform(
-            pd.DataFrame(self.X_data.iloc[idx]).transpose()
+            pd.DataFrame(self.df.iloc[idx]).transpose()
         )
         X_numpy = X_numpy.astype('float32')
 
@@ -114,4 +131,3 @@ class ApiFootballDataset(Dataset):
         y_numpy = torch.from_numpy(np.array([self.y_data[idx]]))
 
         return X_torch, y_numpy
-       

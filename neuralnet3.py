@@ -16,14 +16,14 @@ class FootballOddsDecoder(pl.LightningModule):
         self.dropout = dropout
 
         self.ff = nn.Sequential(
-            nn.Linear(in_features=59369, out_features=1024),
+            nn.Linear(in_features=1028, out_features=1024),
             nn.Dropout(self.dropout),
             nn.ReLU(),
             nn.Linear(in_features=1024, out_features=64),
             nn.Dropout(self.dropout),
             nn.ReLU(),
             nn.Linear(in_features=64, out_features=3),
-            nn.ReLU(),
+            nn.Sigmoid(),
         )
 
         
@@ -39,7 +39,7 @@ class FootballOddsDecoder(pl.LightningModule):
 
         self.y_ff_hat = self.ff(X)
 
-        loss_ff = F.mse_loss(self.y_ff_hat, y.float())
+        loss_ff = F.binary_cross_entropy(self.y_ff_hat, y.float())
 
         # Logging to TensorBoard by default
         self.log("train_loss", loss_ff)
@@ -56,7 +56,7 @@ class FootballOddsDecoder(pl.LightningModule):
 
         y_ff_hat = self.ff(X)
 
-        loss_ff = F.mse_loss(y_ff_hat, y.float())
+        loss_ff = F.binary_cross_entropy(y_ff_hat, y.float())
         
         return {"loss": loss_ff, "y": y_ff_hat}
 
@@ -76,6 +76,8 @@ class FootballOddsDecoder(pl.LightningModule):
         y_ff_hat_mean = y_ff_hat.mean(dim=0)
         y_ff_std_mean = y_ff_std.mean(dim=0)
 
+        # Print and log values
+
         print(f"\n1 mean: {y_ff_hat_mean[0][0]}")
         print(f"X mean: {y_ff_hat_mean[0][1]}")
         print(f"2 mean: {y_ff_hat_mean[0][2]}")
@@ -84,6 +86,8 @@ class FootballOddsDecoder(pl.LightningModule):
         print(f"X std: {y_ff_std_mean[0][1]}")
         print(f"2 std: {y_ff_std_mean[0][2]}")
 
+        print(f"\nval_loss: {avg_loss.item()}\n")
+        
         self.log("val_1_mean", y_ff_hat_mean[0][0])
         self.log("val_X_mean", y_ff_hat_mean[0][1])
         self.log("val_2_mean", y_ff_hat_mean[0][2])
@@ -94,7 +98,6 @@ class FootballOddsDecoder(pl.LightningModule):
 
         self.log("val_loss", avg_loss)
 
-        print(f"\navg_loss: {avg_loss.item()}\n")
 
         return {'val_loss': avg_loss, 'log': {'val_loss': avg_loss}}
         
@@ -102,13 +105,7 @@ class FootballOddsDecoder(pl.LightningModule):
     # Create test step
     
     # def test_step(self, batch, batch_idx):
-
     #     X, y = batch[0], batch[1]
-
-    #     y_ff_hat = self.ff(X)
-
-    #     loss_ff = F.mse_loss(y_ff_hat, y.float())
-    #     self.log("test/loss/ff", loss_ff)
 
 
     def configure_optimizers(self):
