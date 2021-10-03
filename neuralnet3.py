@@ -23,7 +23,7 @@ class FootballOddsDecoder(pl.LightningModule):
             nn.Dropout(self.dropout),
             nn.ReLU(),
             nn.Linear(in_features=1024, out_features=3),
-            nn.Sigmoid(),
+            nn.Softmax(dim=2)
         )
 
         
@@ -39,7 +39,7 @@ class FootballOddsDecoder(pl.LightningModule):
 
         y_ff_hat = self.ff(X)
 
-        loss_ff = F.binary_cross_entropy_with_logits(y_ff_hat, y.float())
+        loss_ff = F.binary_cross_entropy(y_ff_hat, y.float())
 
         # Logging to TensorBoard by default
         self.log("train_loss", loss_ff)
@@ -56,7 +56,7 @@ class FootballOddsDecoder(pl.LightningModule):
 
         y_ff_hat = self.ff(X)
 
-        loss_ff = F.binary_cross_entropy_with_logits(y_ff_hat, y.float())
+        loss_ff = F.binary_cross_entropy(y_ff_hat, y.float())
         return {"loss": loss_ff, "y": y_ff_hat}
 
     def validation_epoch_end(self, outputs):
