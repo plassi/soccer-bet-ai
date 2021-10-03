@@ -41,9 +41,7 @@ class FootballOddsDecoder(pl.LightningModule):
 
         
         loss_ff = F.mse_loss(y_ff_hat, y.float())
-        print(y)
-        print(y_ff_hat)
-        print(loss_ff)
+
 
         # Logging to TensorBoard by default
         self.log("train_loss", loss_ff)
@@ -60,14 +58,8 @@ class FootballOddsDecoder(pl.LightningModule):
 
         y_ff_hat = self.ff(X)
 
-        print(y.size())
-        print(y_ff_hat.size())
-
-        print(y)
-        print(y_ff_hat)
 
         loss_ff = F.mse_loss(y_ff_hat, y.float())
-        print(loss_ff)
         return {"loss": loss_ff, "y": y_ff_hat}
 
     def validation_epoch_end(self, outputs):
