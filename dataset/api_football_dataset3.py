@@ -6,8 +6,6 @@ from torch.utils.data.dataset import Dataset
 from sklearn import preprocessing, impute, compose
 from sklearn.pipeline import make_pipeline
 from sklearn.pipeline import Pipeline as pipe
-from feature_engine.encoding import WoEEncoder, RareLabelEncoder, woe
-from feature_engine.imputation import CategoricalImputer, AddMissingIndicator
 import warnings
 from pandas.core.common import SettingWithCopyWarning
 
@@ -89,20 +87,20 @@ class ApiFootballDataset(Dataset):
 
         # print('Creating WoE encoder...')
 
-        woe_pipeline = pipe([
-            ('label_encoder', RareLabelEncoder(
-                tol=0.001, n_categories=100, ignore_format=True)),
-            ('missing_indicators', AddMissingIndicator()),
-            ('categorical_imputer', CategoricalImputer()),
-            ('woe_encoder', WoEEncoder(ignore_format=True)),
-            ('min_max_scaler', preprocessing.MinMaxScaler(),)
-        ], verbose=True,)
+        # woe_pipeline = pipe([
+        #     ('label_encoder', RareLabelEncoder(
+        #         tol=0.001, n_categories=100, ignore_format=True)),
+        #     ('missing_indicators', AddMissingIndicator()),
+        #     ('categorical_imputer', CategoricalImputer()),
+        #     ('woe_encoder', WoEEncoder(ignore_format=True)),
+        #     ('min_max_scaler', preprocessing.MinMaxScaler(),)
+        # ], verbose=True,)
 
         # Compose master X_data_pipeline
         self.X_data_pipeline = compose.make_column_transformer(
             (numerical_pipeline, self.features.numerical),
-            (onehotencode_pipeline, self.features.onehotencode),
-            (woe_pipeline, self.features.WoEencode),
+            (onehotencode_pipeline, self.features.onehotencode + self.features.WoEencode),
+            # (woe_pipeline, self.features.WoEencode),
         )
 
 
@@ -124,8 +122,7 @@ class ApiFootballDataset(Dataset):
 
         X_numpy = self.X_data_pipeline.transform(
             pd.DataFrame(self.df.iloc[idx]).transpose()
-        )
-        X_numpy = X_numpy.astype('float32')
+        ).astype('float32')
 
         X_torch = torch.from_numpy(X_numpy.toarray())
         y_numpy = torch.from_numpy(np.array([self.y_data[idx]]))

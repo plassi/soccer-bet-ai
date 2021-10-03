@@ -66,7 +66,6 @@ if (args.test_only is False) and (args.early_stopping is False):
                          max_epochs=args.max_epochs,
                          progress_bar_refresh_rate=4,
                          gpus=args.gpus,
-                         precision=16,
                          callbacks=[checkpoint_callback])
 
 
