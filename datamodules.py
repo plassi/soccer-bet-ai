@@ -8,10 +8,12 @@ from dataset.api_football_dataset3 import ApiFootballDataset
 
 
 class FootballOddsDataModule(LightningDataModule):
-    def __init__(self, batch_size, n_workers):
+    def __init__(self, batch_size, n_workers, random_seed):
         super().__init__()
         self.batch_size = batch_size
         self.n_workers = n_workers
+
+        self.random_seed = random_seed
 
     def prepare_data(self, datapath):
         # download, split, etc...
@@ -37,7 +39,7 @@ class FootballOddsDataModule(LightningDataModule):
 
     def train_dataloader(self):
         generator = torch.Generator()
-        generator.manual_seed(42)
+        generator.manual_seed(self.random_seed)
         dataloader = DataLoader(self.train, batch_size=self.batch_size,
                                 num_workers=self.n_workers, shuffle=True, generator=generator)
         return dataloader
