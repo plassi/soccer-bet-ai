@@ -3,6 +3,7 @@
 # %%
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
+from torch.utils import data
 from neuralnet3 import FootballOddsDecoder
 from datamodules import FootballOddsDataModule
 
@@ -12,6 +13,7 @@ from argparse import ArgumentParser
 # %%
 # add arguments
 parser = ArgumentParser()
+parser.add_argument('--lr_finder', default=False, type=bool)
 parser.add_argument('--ck_path', default=None, type=str)
 parser.add_argument('--hparams_file', default=None, type=str)
 parser.add_argument('--test_only', default=False, type=bool)
@@ -65,14 +67,35 @@ if (args.test_only is False) and (args.early_stopping is False):
                          progress_bar_refresh_rate=4,
                          gpus=args.gpus,
                          callbacks=[checkpoint_callback])
-    trainer.fit(model, datamodule)
 
-elif (args.test_only is False) and (args.early_stopping is False):
-    # load model and test it
 
-    trainer = pl.Trainer(min_epochs=args.min_epochs,
-                         max_epochs=args.max_epochs,
-                         progress_bar_refresh_rate=4,
-                         gpus=args.gpus,
-                         callbacks=[checkpoint_callback])
-    trainer.fit(model, datamodule)
+if args.lr_finder is True:
+    
+    # Run learning rate finder
+    
+    lr_finder = trainer.tuner.lr_find(model, datamodule)
+
+    # Pick point based on plot, or get suggestion
+    new_lr = lr_finder.suggestion()
+    print("\nlr_finder.suggestion(): ", new_lr)
+
+    # update hparams of the model
+
+    if args.ck_path is None:
+        model = FootballOddsDecoder(
+            batch_size=args.batch_size, learning_rate=new_lr, dropout=args.dropout)
+    elif args.ck_path is not None:
+        model = FootballOddsDecoder.load_from_checkpoint(
+            checkpoint_path=args.ck_path,
+            hparams_file=args.hparams_file,
+            datamodule=datamodule,
+            batch_size=args.batch_size,
+            learning_rate=new_lr,
+            dropout=args.dropout
+        )
+
+
+
+# Fit model
+
+trainer.fit(model, datamodule)

@@ -47,9 +47,8 @@ class FootballOddsDataModule(LightningDataModule):
             self.val, batch_size=self.batch_size, num_workers=self.n_workers, shuffle=False, drop_last=True)
         return dataloader
 
-    # def test_dataloader(self):
-    #     # dataloader_1 = DataLoader(self.test_1, batch_size=self.batch_size, num_workers=self.n_workers, shuffle=False)
-    #     dataloader = DataLoader(
-    #         self.test, batch_size=self.batch_size, num_workers=self.n_workers, shuffle=False)
-    #     # return [dataloader_1, dataloader]
-    #     return dataloader
+    def test_dataloader(self):
+        # dataloader_1 = DataLoader(self.test_1, batch_size=self.batch_size, num_workers=self.n_workers, shuffle=False)
+        dataloader = DataLoader(
+            self.val, batch_size=self.batch_size, num_workers=self.n_workers, shuffle=False)
+        return dataloader

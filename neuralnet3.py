@@ -19,10 +19,10 @@ class FootballOddsDecoder(pl.LightningModule):
             nn.Linear(in_features=1028, out_features=1024),
             nn.Dropout(self.dropout),
             nn.ReLU(),
-            nn.Linear(in_features=1024, out_features=64),
+            nn.Linear(in_features=1024, out_features=1024),
             nn.Dropout(self.dropout),
             nn.ReLU(),
-            nn.Linear(in_features=64, out_features=3),
+            nn.Linear(in_features=1024, out_features=3),
             nn.Sigmoid(),
         )
 
@@ -104,8 +104,8 @@ class FootballOddsDecoder(pl.LightningModule):
 
     # Create test step
     
-    # def test_step(self, batch, batch_idx):
-    #     X, y = batch[0], batch[1]
+    def test_step(self, batch, batch_idx):
+        X, y = batch[0], batch[1]
 
 
     def configure_optimizers(self):
