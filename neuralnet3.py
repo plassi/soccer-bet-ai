@@ -56,13 +56,7 @@ class FootballOddsDecoder(pl.LightningModule):
 
         X, y = batch[0], batch[1]
 
-        print(X)
-        print(y)
-
         y_ff_hat = self.ff(X)
-
-        print(y_ff_hat)
-
 
         loss_ff = F.mse_loss(y_ff_hat, y)
 

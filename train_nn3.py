@@ -13,6 +13,7 @@ from argparse import ArgumentParser
 # %%
 # add arguments
 parser = ArgumentParser()
+parser.add_argument('--save_top_k', default=5, type=int)
 parser.add_argument('--random_seed', default=None, type=int)
 parser.add_argument('--precision_16', default=False, type=bool)
 parser.add_argument('--lr_finder', default=False, type=bool)
@@ -57,7 +58,7 @@ elif args.ck_path is not None:
 
 checkpoint_callback = ModelCheckpoint(
     monitor="val_accuracy",
-    save_top_k=5,
+    save_top_k=args.save_top_k,
     mode="max",
     filename="epoch={epoch:02d}-step={step}-val_acc={val_accuracy:.2f}"
 )
