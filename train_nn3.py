@@ -108,4 +108,8 @@ if args.lr_finder is True:
 
 # Fit model
 
-trainer.fit(model, datamodule)
+if not args.test_only:
+    trainer.fit(model, datamodule)
+
+elif args.test_only:
+    trainer.test(model, datamodule)

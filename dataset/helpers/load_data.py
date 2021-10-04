@@ -44,7 +44,7 @@ class Load_data:
 
             frame = pd.concat(li, axis=0, ignore_index=True)
 
-            dump(frame, open('cache/dataframe.pkl', 'wb'))
+            # dump(frame, open('cache/dataframe.pkl', 'wb'))
 
             return frame
         
