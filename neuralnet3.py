@@ -19,9 +19,9 @@ class FootballOddsDecoder(pl.LightningModule):
             nn.Linear(in_features=79135, out_features=1024),
             nn.Dropout(self.dropout),
             nn.ReLU(),
-            nn.Linear(in_features=1024, out_features=1024),
-            nn.Dropout(self.dropout),
-            nn.ReLU(),
+            # nn.Linear(in_features=1024, out_features=1024),
+            # nn.Dropout(self.dropout),
+            # nn.ReLU(),
             nn.Linear(in_features=1024, out_features=3),
             nn.Softmax(dim=2)
         )
