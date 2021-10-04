@@ -13,7 +13,7 @@ from argparse import ArgumentParser
 # %%
 # add arguments
 parser = ArgumentParser()
-parser.add_argument('--random_seed', default=42, type=int)
+parser.add_argument('--random_seed', default=None, type=int)
 parser.add_argument('--precision_16', default=False, type=bool)
 parser.add_argument('--lr_finder', default=False, type=bool)
 parser.add_argument('--ck_path', default=None, type=str)

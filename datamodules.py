@@ -39,7 +39,8 @@ class FootballOddsDataModule(LightningDataModule):
 
     def train_dataloader(self):
         generator = torch.Generator()
-        generator.manual_seed(self.random_seed)
+        if self.random_seed is not None:
+            generator.manual_seed(self.random_seed)
         dataloader = DataLoader(self.train, batch_size=self.batch_size,
                                 num_workers=self.n_workers, shuffle=True, generator=generator)
         return dataloader
