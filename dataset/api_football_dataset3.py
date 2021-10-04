@@ -41,23 +41,18 @@ class ApiFootballDataset(Dataset):
         ##########################################################################
 
         # print(Xy_data['teams_home_winner'])
-        self.y_data = []
+        self.y_data = np.empty(shape=[0, 3], dtype=np.int8)
 
         for data in self.df['teams_home_winner']:
             if data != data:
-                self.y_data.append([0, 1, 0])
+                newrow = np.array([[0, 1, 0]], dtype=np.int8)
+                self.y_data = np.append(self.y_data, newrow, axis=0)
             if data == 'True':
-                self.y_data.append([1, 0, 0])
+                newrow = np.array([[1, 0, 0]], dtype=np.int8)
+                self.y_data = np.append(self.y_data, newrow, axis=0)
             if data == 'False':
-                self.y_data.append([0, 0, 1])
-
-
-
-
-        # Select wanted features only
-
-        self.df = self.df[self.features.WoEencode +
-                     self.features.onehotencode + self.features.numerical]
+                newrow = np.array([[0, 0, 1]], dtype=np.int8)
+                self.y_data = np.append(self.y_data, newrow, axis=0)
 
         #########################################################################
         #
@@ -113,8 +108,8 @@ class ApiFootballDataset(Dataset):
         ##########################################################################
 
         # Fit X_data_pipeline
-        self.X_data_pipeline = self.X_data_pipeline.fit(
-            self.df, np.array(self.y_data)[:, 0])
+        self.X_data = self.X_data_pipeline.fit_transform(
+            self.df)
 
         print("X_data_pipeline created")
 
@@ -126,14 +121,7 @@ class ApiFootballDataset(Dataset):
 
     def __getitem__(self, idx):
 
+        X_torch = torch.from_numpy(self.X_data[idx].toarray()).type(torch.float32)
+        y_torch = torch.from_numpy(self.y_data[idx]).type(torch.float32).view(1, 3)
 
-        # FIX THIS PANDAS AWAY
-
-        X_numpy = self.X_data_pipeline.transform(
-            pd.DataFrame(self.df.iloc[idx]).transpose()
-        ).astype('float32')
-
-        X_torch = torch.from_numpy(X_numpy.toarray())
-        y_numpy = torch.from_numpy(np.array([self.y_data[idx]]))
-
-        return X_torch, y_numpy
+        return X_torch, y_torch

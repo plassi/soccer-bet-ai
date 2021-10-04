@@ -56,10 +56,15 @@ class FootballOddsDecoder(pl.LightningModule):
 
         X, y = batch[0], batch[1]
 
+        print(X)
+        print(y)
+
         y_ff_hat = self.ff(X)
 
+        print(y_ff_hat)
 
-        loss_ff = F.mse_loss(y_ff_hat, y.float())
+
+        loss_ff = F.mse_loss(y_ff_hat, y)
 
         y_ff_hat_argmax = torch.argmax(y_ff_hat, dim=2)
 
@@ -106,7 +111,7 @@ class FootballOddsDecoder(pl.LightningModule):
         print(f"X std: {y_ff_std_mean[0][1]}")
         print(f"2 std: {y_ff_std_mean[0][2]}")
 
-        print(f"\nval_loss: {avg_loss.item()}\n")
+        print(f"\nval_loss: {avg_loss.item()}")
         print(f"val_accuracy: {percentage:2f}")
         
         self.log("val_1_mean", y_ff_hat_mean[0][0])
@@ -118,7 +123,6 @@ class FootballOddsDecoder(pl.LightningModule):
         self.log("val_2_std", y_ff_std_mean[0][2])
 
         self.log("val_loss", avg_loss)
-
         self.log("val_accuracy", percentage)
 
 
