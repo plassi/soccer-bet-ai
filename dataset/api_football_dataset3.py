@@ -30,12 +30,33 @@ class ApiFootballDataset(Dataset):
 
         self.df = df
 
+
         # Arrange frame by fixture_date
         self.df = self.df.sort_values(by=['fixture_date'])
 
+        ##########################################################################
+        #
+        #   Create y_data
+        #
+        ##########################################################################
+
+        # print(Xy_data['teams_home_winner'])
+        self.y_data = []
+
+        for data in self.df['teams_home_winner']:
+            if data != data:
+                self.y_data.append([0, 1, 0])
+            if data == 'True':
+                self.y_data.append([1, 0, 0])
+            if data == 'False':
+                self.y_data.append([0, 0, 1])
+
+
+
+
         # Select wanted features only
 
-        self.df = df[self.features.WoEencode +
+        self.df = self.df[self.features.WoEencode +
                      self.features.onehotencode + self.features.numerical]
 
         #########################################################################
@@ -62,22 +83,7 @@ class ApiFootballDataset(Dataset):
             verbose=1,
         )
 
-        ##########################################################################
-        #
-        #   Create y_data
-        #
-        ##########################################################################
-
-        # print(Xy_data['teams_home_winner'])
-        self.y_data = []
-
-        for data in df['teams_home_winner']:
-            if data != data:
-                self.y_data.append([0, 1, 0])
-            if data == 'True':
-                self.y_data.append([1, 0, 0])
-            if data == 'False':
-                self.y_data.append([0, 0, 1])
+        
 
         ##########################################################################
 
@@ -119,6 +125,9 @@ class ApiFootballDataset(Dataset):
         return len(self.df)
 
     def __getitem__(self, idx):
+
+
+        # FIX THIS PANDAS AWAY
 
         X_numpy = self.X_data_pipeline.transform(
             pd.DataFrame(self.df.iloc[idx]).transpose()
