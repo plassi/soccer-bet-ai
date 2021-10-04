@@ -13,7 +13,7 @@ from argparse import ArgumentParser
 # %%
 # add arguments
 parser = ArgumentParser()
-# parser.add_argument('--random_seed', default=None, type=int)
+parser.add_argument('--random_seed', default=None, type=int)
 parser.add_argument('--precision_16', default=False, type=bool)
 parser.add_argument('--lr_finder', default=False, type=bool)
 parser.add_argument('--ck_path', default=None, type=str)
@@ -34,8 +34,10 @@ print('Load data to get neural network features...')
 
 datamodule = FootballOddsDataModule(
     batch_size=args.batch_size, 
-    n_workers=args.n_workers,)
+    n_workers=args.n_workers,
+    random_seed=args.random_seed,)
 datamodule.prepare_data(datapath=args.datapath)
+
 
 # init model
 
@@ -54,9 +56,10 @@ elif args.ck_path is not None:
 
 
 checkpoint_callback = ModelCheckpoint(
-    monitor="val_loss",
-    save_top_k=20,
-    mode="min",
+    monitor="val_accuracy",
+    save_top_k=5,
+    mode="max",
+    filename="epoch={epoch:02d}-step={step}-val_acc={val_accuracy:.2f}"
 )
 
 
@@ -68,6 +71,7 @@ if args.precision_16 is False:
                          max_epochs=args.max_epochs,
                          progress_bar_refresh_rate=4,
                          gpus=args.gpus,
+                         profiler="simple",
                          callbacks=[checkpoint_callback])
 elif args.precision_16 is True:
     # train
@@ -76,6 +80,7 @@ elif args.precision_16 is True:
                          progress_bar_refresh_rate=4,
                          gpus=args.gpus,
                          precision=16,
+                         profiler="simple",
                          callbacks=[checkpoint_callback])
 
 
