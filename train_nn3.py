@@ -60,7 +60,7 @@ checkpoint_callback = ModelCheckpoint(
     monitor="val_accuracy",
     save_top_k=args.save_top_k,
     mode="max",
-    filename="epoch={epoch:02d}-step={step}-val_acc={val_accuracy:.2f}"
+    filename="{epoch:02d}-{step}-{val_accuracy:.2f}"
 )
 
 
