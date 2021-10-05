@@ -27,7 +27,7 @@ parser.add_argument('--gpus', default=0, type=int)
 parser.add_argument('--datapath', default='../data/', type=str)
 parser.add_argument('--batch_size', default=32, type=int)
 parser.add_argument('--n_workers', default=4, type=int)
-parser.add_argument('--lr', default=2.7e-4, type=float)
+parser.add_argument('--lr', default=2.7e-6, type=float)
 parser.add_argument('--min_epochs', default=0, type=int)
 parser.add_argument('--max_epochs', default=20, type=int)
 parser.add_argument('--dropout', default=0.5, type=float)
@@ -37,7 +37,7 @@ args = parser.parse_args()
 # %%
 # Early stoppers
 early_stop_callback_1 = EarlyStopping(
-    monitor="val_X_std", min_delta=0.00, divergence_threshold=0.000001, patience=1, verbose=True, mode="max")
+    monitor="val_accuracy", min_delta=0.0001, divergence_threshold=0.000001, patience=100, verbose=True, mode="max")
 
 
 checkpoint_callback = ModelCheckpoint(
