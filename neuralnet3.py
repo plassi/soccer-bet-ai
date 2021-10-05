@@ -6,26 +6,38 @@ import pytorch_lightning as pl
 
 # %%
 class FootballOddsDecoder(pl.LightningModule):
-    def __init__(self, batch_size, learning_rate, dropout):
+    def __init__(self, h_layers, batch_size, learning_rate, dropout):
         super().__init__()
-
+        self.save_hyperparameters()
         # print("Initializing LSTM")
 
         self.lr = learning_rate
         self.batch_size = batch_size
         self.dropout = dropout
 
-        self.ff = nn.Sequential(
-            nn.Linear(in_features=79135, out_features=1024),
-            nn.Dropout(self.dropout),
-            nn.ReLU(),
-            # nn.Linear(in_features=1024, out_features=1024),
-            # nn.Dropout(self.dropout),
-            # nn.ReLU(),
-            nn.Linear(in_features=1024, out_features=3),
-            nn.Softmax(dim=2)
-        )
+        if h_layers == 1:
+            self.ff = nn.Sequential(
+                nn.Linear(in_features=79135, out_features=1024),
+                nn.Dropout(self.dropout),
+                nn.ReLU(),
 
+                nn.Linear(in_features=1024, out_features=3),
+                nn.Softmax(dim=2)
+            )
+
+        if h_layers == 2:
+            self.ff = nn.Sequential(
+                nn.Linear(in_features=79135, out_features=1024),
+                nn.Dropout(self.dropout),
+                nn.ReLU(),
+                
+                nn.Linear(in_features=1024, out_features=1024),
+                nn.Dropout(self.dropout),
+                nn.ReLU(),
+
+                nn.Linear(in_features=1024, out_features=3),
+                nn.Softmax(dim=2)
+            )
         
 
     def forward(self, X):
@@ -40,7 +52,7 @@ class FootballOddsDecoder(pl.LightningModule):
         y_ff_hat = self.ff(X)
 
         
-        loss_ff = F.mse_loss(y_ff_hat, y.float())
+        loss_ff = F.mse_loss(y_ff_hat, y)
 
 
         # Logging to TensorBoard by default
