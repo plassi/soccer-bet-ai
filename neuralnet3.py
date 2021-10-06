@@ -88,10 +88,6 @@ class FootballOddsDecoder(pl.LightningModule):
 
     def validation_epoch_end(self, outputs):
         
-        self.log("hp_learning_rate", self.lr)
-        self.log("hp_batch_size", self.batch_size)
-        self.log("hp_dropout", self.dropout)
-        
         avg_loss = torch.stack([x['loss'] for x in outputs]).mean()
 
         # count mean and deviations from the mean for every column in each "y" in output
