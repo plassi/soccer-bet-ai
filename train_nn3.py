@@ -37,7 +37,7 @@ args = parser.parse_args()
 # %%
 # Early stoppers
 early_stop_callback_1 = EarlyStopping(
-    monitor="val_accuracy", min_delta=0.0001, divergence_threshold=0.000001, patience=100, verbose=True, mode="max")
+    monitor="val_accuracy", min_delta=0.0001, patience=100, verbose=True, mode="max")
 
 
 checkpoint_callback = ModelCheckpoint(
