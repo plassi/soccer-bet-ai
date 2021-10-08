@@ -116,22 +116,22 @@ class FootballOddsDecoder(pl.LightningModule):
                  "val_X_mean": y_ff_hat_mean[0][1],
                  "val_2_mean": y_ff_hat_mean[0][2]})
 
-        mean_of_std_means = np.array(
-            [y_ff_std_mean[0][0], y_ff_std_mean[0][1], y_ff_std_mean[0][2]]).mean()
+        mean_of_std_means = y_ff_std_mean.mean()
+        self.log("mean_of_std_means", mean_of_std_means)
 
-        self.log("val_stds", {
-            "val_1_std": y_ff_std_mean[0][0],
-            "val_X_std": y_ff_std_mean[0][1],
-            "val_2_std": y_ff_std_mean[0][2],
-            "mean_of_std_means": mean_of_std_means})
+        # self.log("val_stds", {
+        #     "val_1_std": y_ff_std_mean[0][0],
+        #     "val_X_std": y_ff_std_mean[0][1],
+        #     "val_2_std": y_ff_std_mean[0][2],
+        #     })
 
-        # self.log("val_1_mean", y_ff_hat_mean[0][0])
-        # self.log("val_X_mean", y_ff_hat_mean[0][1])
-        # self.log("val_2_mean", y_ff_hat_mean[0][2])
+        self.log("val_1_mean", y_ff_hat_mean[0][0])
+        self.log("val_X_mean", y_ff_hat_mean[0][1])
+        self.log("val_2_mean", y_ff_hat_mean[0][2])
 
-        # self.log("val_1_std", y_ff_std_mean[0][0])
-        # self.log("val_X_std", y_ff_std_mean[0][1])
-        # self.log("val_2_std", y_ff_std_mean[0][2])
+        self.log("val_1_std", y_ff_std_mean[0][0])
+        self.log("val_X_std", y_ff_std_mean[0][1])
+        self.log("val_2_std", y_ff_std_mean[0][2])
 
         self.log("val_loss", avg_loss)
         self.log("val_accuracy", percentage)
