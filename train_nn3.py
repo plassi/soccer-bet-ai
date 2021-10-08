@@ -37,15 +37,15 @@ args = parser.parse_args()
 # %%
 # Early stoppers
 early_stop_callback_1 = EarlyStopping(
-    monitor="val_accuracy", min_delta=0.0001, patience=80, verbose=True, mode="max")
+    monitor="mean_of_std_means", min_delta=0.0001, patience=100, verbose=True, mode="max")
 
 
 checkpoint_callback = ModelCheckpoint(
-    monitor="val_accuracy",
+    monitor="mean_of_std_means",
     save_top_k=args.save_top_k,
     save_last=True,
     mode="max",
-    filename="{epoch:02d}-{step}-{val_accuracy:.2f}",
+    filename="{epoch:02d}-{step}-{mean_of_std_means:.2f}",
     verbose=True,
 )
 
