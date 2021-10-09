@@ -39,7 +39,7 @@ args = parser.parse_args()
 early_stop_callback_1 = EarlyStopping(
     monitor="mean_of_std_means", min_delta=0.001, patience=60, verbose=True, mode="max")
 
-early_stop_callback_2 = EarlyStopping(monitor="train_loss", divergence_threshold=0.09, min_delta=0.00, patience=3, verbose=True, mode="min")
+early_stop_callback_2 = EarlyStopping(monitor="train_loss", stopping_threshold=0.09, min_delta=0.00, patience=3, verbose=True, mode="min")
 
 
 checkpoint_callback = ModelCheckpoint(
