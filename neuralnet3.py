@@ -16,6 +16,16 @@ class FootballOddsDecoder(pl.LightningModule):
         self.batch_size = batch_size
         self.dropout = dropout
 
+        if h_layers == 0:
+            self.ff = nn.Sequential(
+                nn.Linear(in_features=12540, out_features=h_features),
+                nn.Dropout(self.dropout),
+                nn.ReLU(),
+
+                nn.Linear(in_features=h_features, out_features=3),
+                nn.Softmax(dim=2)
+            )
+
         if h_layers == 1:
             self.ff = nn.Sequential(
                 nn.Linear(in_features=79135, out_features=h_features),
