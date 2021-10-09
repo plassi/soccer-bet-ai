@@ -37,7 +37,9 @@ args = parser.parse_args()
 # %%
 # Early stoppers
 early_stop_callback_1 = EarlyStopping(
-    monitor="mean_of_std_means", min_delta=0.001, patience=100, verbose=True, mode="max")
+    monitor="mean_of_std_means", min_delta=0.001, patience=60, verbose=True, mode="max")
+
+early_stop_callback_2 = EarlyStopping(monitor="train_loss", divergence_threshold=0.09, min_delta=0.00, patience=3, verbose=True, mode="min")
 
 
 checkpoint_callback = ModelCheckpoint(
@@ -86,7 +88,7 @@ if args.precision_16 is False:
                          gpus=args.gpus,
                          #  profiler="simple",
                          stochastic_weight_avg=True,
-                         callbacks=[checkpoint_callback, early_stop_callback_1])
+                         callbacks=[checkpoint_callback, early_stop_callback_1, early_stop_callback_2])
 elif args.precision_16 is True:
     # train
     trainer = pl.Trainer(min_epochs=args.min_epochs,
@@ -96,7 +98,7 @@ elif args.precision_16 is True:
                          precision=16,
                          #  profiler="simple",
                          stochastic_weight_avg=True,
-                         callbacks=[checkpoint_callback, early_stop_callback_1])
+                         callbacks=[checkpoint_callback, early_stop_callback_1, early_stop_callback_2])
 
 
 # Learning_rate finder
