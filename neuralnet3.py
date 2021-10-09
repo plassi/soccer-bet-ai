@@ -110,13 +110,14 @@ class FootballOddsDecoder(pl.LightningModule):
 
         print(f"\nval_loss: {avg_loss.item()}")
         print(f"val_accuracy: {percentage:2f}")
+        mean_of_std_means = y_ff_std_mean.mean()
+        print(f"mean_of_std_means: {mean_of_std_means}")
 
         # self.log("val_means", {
         #          "val_1_mean": y_ff_hat_mean[0][0],
         #          "val_X_mean": y_ff_hat_mean[0][1],
         #          "val_2_mean": y_ff_hat_mean[0][2]})
 
-        mean_of_std_means = y_ff_std_mean.mean()
         self.log("mean_of_std_means", mean_of_std_means)
 
         # self.log("val_stds", {
