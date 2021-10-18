@@ -23,7 +23,7 @@ class FootballOddsDataModule(LightningDataModule):
         # only called on 1 GPU/TPU in distributed
 
         # load df from pickle
-        df = pickle.load(open(datapath + "df.pickle", 'rb'))
+        df = pickle.load(open(datapath + "/df.pickle", 'rb'))
         self.dataset = ApiFootballDataset(df=df)
 
     def setup(self, stage):
