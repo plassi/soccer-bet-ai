@@ -14,8 +14,9 @@ from argparse import ArgumentParser
 # %%
 # add arguments
 parser = ArgumentParser()
+parser.add_argument('--activation_fn', default='../data/', type=str)
 parser.add_argument('--h_layers', default=1, type=int)
-parser.add_argument('--h_features', default=1024, type=int)
+parser.add_argument('--h_features', default=256, type=int)
 parser.add_argument('--save_top_k', default=5, type=int)
 parser.add_argument('--random_seed', default=None, type=int)
 parser.add_argument('--precision_16', default=False, type=bool)
@@ -27,7 +28,7 @@ parser.add_argument('--gpus', default=0, type=int)
 parser.add_argument('--datapath', default='../data/', type=str)
 parser.add_argument('--batch_size', default=256, type=int)
 parser.add_argument('--n_workers', default=4, type=int)
-parser.add_argument('--lr', default=2.7e-6, type=float)
+parser.add_argument('--lr', default=1e-6, type=float)
 parser.add_argument('--min_epochs', default=0, type=int)
 parser.add_argument('--max_epochs', default=20, type=int)
 parser.add_argument('--dropout', default=0.5, type=float)
@@ -37,23 +38,23 @@ args = parser.parse_args()
 # %%
 # Early stoppers
 early_stop_callback_1 = EarlyStopping(
-    monitor="mean_of_std_means", min_delta=0.001, patience=80, verbose=True, mode="max")
+    monitor="mean_of_std_means", min_delta=0.0005, patience=20, verbose=True, mode="max")
 
-early_stop_callback_2 = EarlyStopping(monitor="train_loss", min_delta=0.0001, patience=80, verbose=True, mode="min", stopping_threshold=0.07 )
+early_stop_callback_2 = EarlyStopping(monitor="val_loss", min_delta=0.0001, patience=20, verbose=True, mode="min", stopping_threshold=0.07 )
 
 
 checkpoint_callback = ModelCheckpoint(
-    monitor="mean_of_std_means",
+    monitor="val_loss",
     save_top_k=args.save_top_k,
     save_last=True,
-    mode="max",
-    filename="{epoch:02d}-{step}",
+    mode="min",
+    filename="{epoch:02d}-{step}-{val_loss:.6f}",
     verbose=True,
 )
 
 
 # Get parameters
-print('Load data to get neural network features...')
+print('Loading datamodule...')
 
 datamodule = FootballOddsDataModule(
     batch_size=args.batch_size,

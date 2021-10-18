@@ -1,10 +1,9 @@
 import math
-
+import pickle
 from pytorch_lightning.core.datamodule import LightningDataModule
 import torch
 import random
 from torch.utils.data import DataLoader, Subset
-from dataset.helpers.load_data import Load_data
 from dataset.api_football_dataset3 import ApiFootballDataset
 
 
@@ -23,7 +22,8 @@ class FootballOddsDataModule(LightningDataModule):
         # download, split, etc...
         # only called on 1 GPU/TPU in distributed
 
-        df = Load_data(csv_data_path=datapath).get_data()
+        # load df from pickle
+        df = pickle.load(open(datapath + "df.pickle", 'rb'))
         self.dataset = ApiFootballDataset(df=df)
 
     def setup(self, stage):

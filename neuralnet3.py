@@ -16,37 +16,39 @@ class FootballOddsDecoder(pl.LightningModule):
         self.batch_size = batch_size
         self.dropout = dropout
 
-        if h_layers == 0:
-            self.ff = nn.Sequential(
-                nn.Linear(in_features=12540, out_features=h_features),
-                nn.Dropout(self.dropout),
-                nn.ReLU(),
-
-                nn.Linear(in_features=h_features, out_features=3),
-                nn.Softmax(dim=2)
-            )
-
         if h_layers == 1:
             self.ff = nn.Sequential(
-                nn.Linear(in_features=79135, out_features=h_features),
+                nn.Linear(in_features=27141, out_features=h_features),
                 nn.Dropout(self.dropout),
                 nn.ReLU(),
-
                 nn.Linear(in_features=h_features, out_features=3),
                 nn.Softmax(dim=2)
             )
 
         if h_layers == 2:
             self.ff = nn.Sequential(
-                nn.Linear(in_features=79135, out_features=h_features),
+                nn.Linear(in_features=27141, out_features=h_features),
                 nn.Dropout(self.dropout),
                 nn.ReLU(),
-
                 nn.Linear(in_features=h_features, out_features=h_features),
                 nn.Dropout(self.dropout),
                 nn.ReLU(),
-
                 nn.Linear(in_features=h_features, out_features=3),
+                nn.Softmax(dim=2)
+            )
+
+        if h_layers == 3:
+            self.ff = nn.Sequential(
+                nn.Linear(in_features=27141, out_features=256),
+                nn.Dropout(self.dropout),
+                nn.ReLU(),
+                nn.Linear(in_features=256, out_features=128),
+                nn.Dropout(self.dropout),
+                nn.ReLU(),
+                nn.Linear(in_features=128, out_features=64),
+                nn.Dropout(self.dropout),
+                nn.ReLU(),
+                nn.Linear(in_features=64, out_features=3),
                 nn.Softmax(dim=2)
             )
 
@@ -57,6 +59,15 @@ class FootballOddsDecoder(pl.LightningModule):
     def training_step(self, batch, batch_idx):
 
         X, y = batch[0], batch[1]
+
+        # print(X)
+        # from X print all nan values only
+        # for row in X:
+        #     for col in row:
+        #         for i, value in enumerate(col):
+        #             if torch.isnan(value):
+        #                 print(f"index: {i}, value: {value}")
+        
 
         y_ff_hat = self.ff(X)
 
