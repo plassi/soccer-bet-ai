@@ -20,9 +20,10 @@ class FootballOddsLSTM(pl.LightningModule):
         self.lr = learning_rate
         self.batch_size = batch_size
         self.dropout = dropout
+        self.input_size = input_features
 
         self.ff = nn.Sequential(
-            nn.LSTM(input_size = input_features, hidden_size = h_features, num_layers = h_layers, dropout = dropout),
+            nn.LSTM(input_size = self.input_size, hidden_size = h_features, num_layers = h_layers, dropout = dropout),
             extractlastcell(),
             nn.Linear(in_features = h_features, out_features = int(h_features / 2)),
             nn.ReLU(inplace = True),
@@ -50,7 +51,7 @@ class FootballOddsLSTM(pl.LightningModule):
         #                 print(f"index: {i}, value: {value}")
         
 
-        y_ff_hat = self.ff(X.view(X.shape[0], -1, X.shape[1]))
+        y_ff_hat = self.ff(X)
 
         y_ff_hat = y_ff_hat.view(y.shape[0], y.shape[1], y.shape[2])
 
@@ -78,7 +79,7 @@ class FootballOddsLSTM(pl.LightningModule):
 
         # print(X.view(X.shape[0], -1, X.shape[1]).shape)
 
-        y_ff_hat = self.ff(X.view(X.shape[0], -1, X.shape[1]))
+        y_ff_hat = self.ff(X)
 
         y_ff_hat = y_ff_hat.view(y.shape[0], y.shape[1], y.shape[2])
 
