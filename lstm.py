@@ -12,7 +12,7 @@ class extractlastcell(nn.Module):
 
 # %%
 class FootballOddsLSTM(pl.LightningModule):
-    def __init__(self, h_layers, h_features, batch_size, learning_rate, dropout):
+    def __init__(self, h_layers, h_features, batch_size, learning_rate, dropout, input_features):
         super().__init__()
         self.save_hyperparameters()
         # print("Initializing LSTM")
@@ -21,10 +21,8 @@ class FootballOddsLSTM(pl.LightningModule):
         self.batch_size = batch_size
         self.dropout = dropout
 
-        input_size = 27141
-
         self.ff = nn.Sequential(
-            nn.LSTM(input_size = input_size, hidden_size = h_features, num_layers = h_layers, dropout = dropout),
+            nn.LSTM(input_size = input_features, hidden_size = h_features, num_layers = h_layers, dropout = dropout),
             extractlastcell(),
             nn.Linear(in_features = h_features, out_features = int(h_features / 2)),
             nn.ReLU(inplace = True),
@@ -52,7 +50,7 @@ class FootballOddsLSTM(pl.LightningModule):
         #                 print(f"index: {i}, value: {value}")
         
 
-        y_ff_hat = self.ff(X)
+        y_ff_hat = self.ff(X.view(X.shape[0], -1, X.shape[1]))
 
         y_ff_hat = y_ff_hat.view(y.shape[0], y.shape[1], y.shape[2])
 
@@ -71,7 +69,16 @@ class FootballOddsLSTM(pl.LightningModule):
 
         X, y = batch[0], batch[1]
 
-        y_ff_hat = self.ff(X)
+        # # print number of X features
+        # print(X.shape)
+
+        # print("X.shape:", X.shape)
+
+        # print(X.view(X.shape[0], -1, X.shape[1]))
+
+        # print(X.view(X.shape[0], -1, X.shape[1]).shape)
+
+        y_ff_hat = self.ff(X.view(X.shape[0], -1, X.shape[1]))
 
         y_ff_hat = y_ff_hat.view(y.shape[0], y.shape[1], y.shape[2])
 

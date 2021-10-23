@@ -17,18 +17,18 @@ import pickle
 # add arguments
 parser = ArgumentParser()
 parser.add_argument('--cache', default=False, type=bool)
-parser.add_argument('--h_layers', default=1, type=int)
+parser.add_argument('--h_layers', default=3, type=int)
 parser.add_argument('--h_features', default=256, type=int)
-parser.add_argument('--save_top_k', default=5, type=int)
+parser.add_argument('--save_top_k', default=3, type=int)
 parser.add_argument('--random_seed', default=None, type=int)
 parser.add_argument('--precision_16', default=False, type=bool)
 parser.add_argument('--ck_path', default=None, type=str)
 # parser.add_argument('--early_stopping', default=False, type=bool)
 parser.add_argument('--gpus', default=0, type=int)
-parser.add_argument('--datapath', default='../data/', type=str)
-parser.add_argument('--batch_size', default=256, type=int)
+parser.add_argument('--datapath', default='../data_test/', type=str)
+parser.add_argument('--batch_size', default=4, type=int)
 parser.add_argument('--n_workers', default=4, type=int)
-parser.add_argument('--lr', default=1e-6, type=float)
+parser.add_argument('--lr', default=1e-5, type=float)
 parser.add_argument('--min_epochs', default=0, type=int)
 parser.add_argument('--max_epochs', default=20, type=int)
 parser.add_argument('--dropout', default=0.5, type=float)
@@ -38,7 +38,8 @@ args = parser.parse_args()
 # %%
 # Early stoppers
 
-early_stop_callback = EarlyStopping(monitor="val_accuracy", min_delta=0.0001, patience=20, verbose=True, mode="max" )
+early_stop_callback = EarlyStopping(
+    monitor="val_accuracy", min_delta=0.0001, patience=10, verbose=True, mode="max")
 
 
 checkpoint_callback = ModelCheckpoint(
@@ -74,18 +75,20 @@ else:
 
 # init model
 
+input_features = datamodule.dataset.X_data.shape[1]
+
 if args.ck_path is None:
     model = FootballOddsLSTM(
         h_layers=args.h_layers,
         h_features=args.h_features,
         batch_size=args.batch_size,
         learning_rate=args.lr,
-        dropout=args.dropout)
+        dropout=args.dropout,
+        input_features=input_features,)
 elif args.ck_path is not None:
     model = FootballOddsLSTM.load_from_checkpoint(
         checkpoint_path=args.ck_path,
     )
-
 
 
 # Select training or testing loop from arguments
@@ -111,10 +114,6 @@ elif args.precision_16 is True:
                          callbacks=[checkpoint_callback, early_stop_callback])
 
 
-
-
 # Fit model
 
 trainer.fit(model, datamodule)
-
-

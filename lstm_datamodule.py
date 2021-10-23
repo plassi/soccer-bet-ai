@@ -4,7 +4,11 @@ from pytorch_lightning.core.datamodule import LightningDataModule
 import torch
 import random
 from torch.utils.data import DataLoader, Subset
-from dataset.api_football_dataset3 import ApiFootballDataset
+from dataset.api_football_dataset_lstm import ApiFootballDataset
+
+from tqdm import tqdm
+
+import os
 
 
 class FootballOddsDataModule(LightningDataModule):
@@ -22,8 +26,15 @@ class FootballOddsDataModule(LightningDataModule):
         # download, split, etc...
         # only called on 1 GPU/TPU in distributed
 
-        # load df from pickle
-        df = pickle.load(open(datapath + "/df.pickle", 'rb'))
+        # load df from multiple pickle files in datapath
+        files = os.listdir(datapath)
+        files = [os.path.join(datapath, f) for f in files]
+        
+        df = pickle.load(open(files[0], 'rb'))
+        for f in tqdm(files[1:]):
+            df = df.append(pickle.load(open(f, 'rb')))
+
+        # df = pickle.load(open(datapath + "/df.pickle", 'rb'))
         self.dataset = ApiFootballDataset(df=df)
 
     def setup(self, stage):
