@@ -26,8 +26,8 @@ class FootballOddsDataModule(LightningDataModule):
         # download, split, etc...
         # only called on 1 GPU/TPU in distributed
 
-        # load df from multiple pickle files in datapath
-        files = os.listdir(datapath)
+        # load files that start with "fixtures" from datapath
+        files = [f for f in os.listdir(datapath) if f.startswith("fixtures")]
         files = [os.path.join(datapath, f) for f in files]
         
         df = pickle.load(open(files[0], 'rb'))
