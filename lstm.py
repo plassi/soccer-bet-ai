@@ -17,16 +17,12 @@ class FootballOddsLSTM(pl.LightningModule):
         super().__init__()
         self.automatic_optimization = False
         self.save_hyperparameters()
+
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         # print("Initializing LSTM")
 
-        if torch.cuda.is_available():
-            self.lstm_hidden = (torch.randn(h_layers, 4, h_features, requires_grad=True, device='cuda'), torch.randn(
-            h_layers, 4, h_features, requires_grad=True, device='cuda'))
-        else:
-            torch.device('cpu')
-
-        self.lstm_hidden = (torch.randn(h_layers, 4, h_features, requires_grad=True, device='cpu'), torch.randn(
-            h_layers, 4, h_features, requires_grad=True, device='cpu'))
+        self.lstm_hidden = (torch.randn(h_layers, 4, h_features, requires_grad=True).to(device), torch.randn(
+            h_layers, 4, h_features, requires_grad=True).to(device))
 
         self.lr = learning_rate
         self.batch_size = batch_size
