@@ -35,6 +35,9 @@ parser.add_argument('--dropout', default=0.5, type=float)
 args = parser.parse_args()
 
 
+if args.random_seed is not None:
+    pl.seed_everything(args.random_seed)
+
 # %%
 # Early stoppers
 

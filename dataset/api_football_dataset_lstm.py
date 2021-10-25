@@ -260,7 +260,7 @@ class ApiFootballDataset(Dataset):
         X_data_slicer = gen_batches(self.X_data.shape[0], self.seq_len)
         self.X_slices = [slice for slice in X_data_slicer]
 
-        print("X_data", self.X_data)
+        # print("X_data", self.X_data)
         # transform X_data shape to self.seq_length
 
         # print("X_data.shape", self.X_data.shape)

@@ -5,10 +5,10 @@ import pytorch_lightning as pl
 import numpy as np
 
 
-class extractlastcell(nn.Module):
-    def forward(self, x):
-        out, _ = x
-        return out[:, -1, :]
+# class extractlastcell(nn.Module):
+#     def forward(self, x):
+#         out, _ = x
+#         return out[:, -1, :]
 
 
 # %%
@@ -18,33 +18,41 @@ class FootballOddsLSTM(pl.LightningModule):
         self.save_hyperparameters()
         # print("Initializing LSTM")
 
+        self.lstm_hidden = (torch.randn(h_layers, 4, h_features, requires_grad=True), torch.randn(
+            h_layers, 4, h_features, requires_grad=True,))
+
         self.lr = learning_rate
         self.batch_size = batch_size
         self.dropout = dropout
         self.input_size = input_features
 
-        self.ff = nn.Sequential(
-            nn.LSTM(input_size=self.input_size, hidden_size=h_features,
-                    num_layers=h_layers, dropout=dropout, ),
-            extractlastcell(),
-            nn.Linear(in_features=h_features,
-                      out_features=int(h_features / 2)),
-            nn.ReLU(inplace=True),
-            nn.BatchNorm1d(num_features=int(h_features / 2)),
-            nn.Linear(in_features=int(h_features / 2), out_features=3),
-            nn.Softmax(dim=1)
+        self.lstm = nn.LSTM(input_size=self.input_size, hidden_size=h_features,
+                            num_layers=h_layers, dropout=dropout, )
 
+        self.ff = nn.Sequential(
+            nn.Linear(in_features=h_features,
+                      out_features=3),
+            nn.Softmax(dim=1)
         )
 
     def forward(self, X):
 
-        return self.ff(X)
+        y_pred, self.lstm_hidden = self.lstm(X)
+        y_ff_hat = self.ff(y_pred[:, -1, :])
+
+        return y_ff_hat
 
     def training_step(self, batch, batch_idx):
 
         X, y = batch[0], batch[1]
 
-        y_ff_hat = self.ff(X)
+        y_pred, self.lstm_hidden = self.lstm(X, (self.lstm_hidden[0].detach(), self.lstm_hidden[1].detach()))
+
+        # print(self.lstm_hidden[1])
+
+        y_ff_hat = self.ff(y_pred[:, -1, :])
+
+        # print(y_ff_hat)
 
         loss_ff = F.mse_loss(y_ff_hat, y[:, :, -3:].view(-1, 3))
 
@@ -63,11 +71,19 @@ class FootballOddsLSTM(pl.LightningModule):
         # print number of X features
 
         # print(X)
-        # print(X.shape)
+        # print("X.shape", X.shape)
 
+        # print("lstm_hidden", self.lstm_hidden)
+        # print("lstm_hidden.shape", self.lstm_hidden.shape)
         # print(X.size(-1))
+        
 
-        y_ff_hat = self.ff(X)
+
+        y_pred, self.lstm_hidden = self.lstm(X, (self.lstm_hidden[0].detach(), self.lstm_hidden[1].detach()))
+
+        y_ff_hat = self.ff(y_pred[:, -1, :])
+
+        # print(y_ff_hat)
 
         loss_ff = F.mse_loss(y_ff_hat, y[:, :, -3:].view(-1, 3))
 
@@ -176,5 +192,6 @@ class FootballOddsLSTM(pl.LightningModule):
         return percentage
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
+        parameters = self.parameters()
+        optimizer = torch.optim.Adam(parameters, lr=self.lr)
         return optimizer
