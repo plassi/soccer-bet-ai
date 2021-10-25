@@ -15,6 +15,7 @@ import numpy as np
 class FootballOddsLSTM(pl.LightningModule):
     def __init__(self, h_layers, h_features, batch_size, learning_rate, dropout, input_features):
         super().__init__()
+        self.automatic_optimization = False
         self.save_hyperparameters()
         # print("Initializing LSTM")
 
@@ -46,7 +47,9 @@ class FootballOddsLSTM(pl.LightningModule):
 
         X, y = batch[0], batch[1]
 
-        y_pred, self.lstm_hidden = self.lstm(X, (self.lstm_hidden[0].detach(), self.lstm_hidden[1].detach()))
+        
+
+        y_pred, _ = self.lstm(X, (self.lstm_hidden[0], self.lstm_hidden[1]))
 
         # print(self.lstm_hidden[1])
 
@@ -54,12 +57,16 @@ class FootballOddsLSTM(pl.LightningModule):
 
         # print(y_ff_hat)
 
-        loss_ff = F.mse_loss(y_ff_hat, y[:, :, -3:].view(-1, 3))
+        opt = self.optimizers()
+        opt.zero_grad()
+        loss = F.mse_loss(y_ff_hat, y[:, :, -3:].view(-1, 3))
+        self.manual_backward(loss, retain_graph=True)
+        opt.step()
 
         # Logging to TensorBoard by default
-        self.log("train_loss", loss_ff)
+        self.log("train_loss", loss)
 
-        return loss_ff
+        return loss
 
     # def training_epoch_end(self, outputs) -> None:
     #     print(self.y_ff_hat)
@@ -79,7 +86,7 @@ class FootballOddsLSTM(pl.LightningModule):
         
 
 
-        y_pred, self.lstm_hidden = self.lstm(X, (self.lstm_hidden[0].detach(), self.lstm_hidden[1].detach()))
+        y_pred, self.lstm_hidden = self.lstm(X, (self.lstm_hidden[0], self.lstm_hidden[1]))
 
         y_ff_hat = self.ff(y_pred[:, -1, :])
 
@@ -195,3 +202,4 @@ class FootballOddsLSTM(pl.LightningModule):
         parameters = self.parameters()
         optimizer = torch.optim.Adam(parameters, lr=self.lr)
         return optimizer
+        
