@@ -26,9 +26,9 @@ parser.add_argument('--ck_path', default=None, type=str)
 # parser.add_argument('--early_stopping', default=False, type=bool)
 parser.add_argument('--gpus', default=0, type=int)
 parser.add_argument('--datapath', default='../data_test/', type=str)
-parser.add_argument('--batch_size', default=4, type=int)
+parser.add_argument('--batch_size', default=64, type=int)
 parser.add_argument('--n_workers', default=4, type=int)
-parser.add_argument('--lr', default=1e-5, type=float)
+parser.add_argument('--lr', default=1e-6, type=float)
 parser.add_argument('--min_epochs', default=0, type=int)
 parser.add_argument('--max_epochs', default=20, type=int)
 parser.add_argument('--dropout', default=0.5, type=float)
@@ -39,7 +39,7 @@ args = parser.parse_args()
 # Early stoppers
 
 early_stop_callback = EarlyStopping(
-    monitor="val_accuracy", min_delta=0.0001, patience=10, verbose=True, mode="max")
+    monitor="val_accuracy", min_delta=0.0001, patience=int(args.max_epochs / 8), verbose=True, mode="max")
 
 
 checkpoint_callback = ModelCheckpoint(
@@ -75,6 +75,7 @@ else:
 
 # init model
 
+print("datamodule.dataset.X_data.shape", datamodule.dataset.X_data.shape)
 input_features = datamodule.dataset.X_data.shape[1]
 
 if args.ck_path is None:

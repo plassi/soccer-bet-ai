@@ -14,6 +14,11 @@ from pandas.core.common import SettingWithCopyWarning
 
 from .features.data_features import DataFeatures
 
+import gc
+import math
+
+from sklearn.utils import gen_batches
+
 
 class ApiFootballDataset(Dataset):
     """
@@ -99,7 +104,7 @@ class ApiFootballDataset(Dataset):
                     X[i, j] = X[i, j]
         return X
 
-    def __init__(self, df, batch_size=32):
+    def __init__(self, df, seq_len=4):
         """
         Args:
             csv_path (str): path to csv file
@@ -109,31 +114,31 @@ class ApiFootballDataset(Dataset):
         # ignore SettingWithCopyWarning
         warnings.simplefilter(action="ignore", category=SettingWithCopyWarning)
 
+        self.seq_len = seq_len
         self.features = DataFeatures()
 
-        self.df = df.reset_index(drop=True)
+        df = df.reset_index(drop=True)
 
-        self.df[self.features.one_hot_encode_features] = self.df[self.features.one_hot_encode_features].astype(
+        df[self.features.one_hot_encode_features] = df[self.features.one_hot_encode_features].astype(
             str)
-        self.df[self.features.normalize_features] = self.df[self.features.normalize_features].astype(
+        df[self.features.normalize_features] = df[self.features.normalize_features].astype(
             float)
-        self.df[self.features.percentage_features] = self.df[self.features.percentage_features].astype(
+        df[self.features.percentage_features] = df[self.features.percentage_features].astype(
             str)
-        self.df[self.features.form_features] = self.df[self.features.form_features].astype(
+        df[self.features.form_features] = df[self.features.form_features].astype(
             str)
-        self.df[self.features.scores_features] = self.df[self.features.scores_features].astype(
+        df[self.features.scores_features] = df[self.features.scores_features].astype(
             str)
 
         # For form datas, get the longest strings lengths
-        home_form_longest_string = self.df['predictions_0_teams_home_league_form'].str.len(
+        home_form_longest_string = df['predictions_0_teams_home_league_form'].str.len(
         ).max()
-        away_form_longest_string = self.df['predictions_0_teams_away_league_form'].str.len(
+        away_form_longest_string = df['predictions_0_teams_away_league_form'].str.len(
         ).max()
         self.longest_form_string_length = max(
             home_form_longest_string, away_form_longest_string)
 
         print("Longest form string: ", self.longest_form_string_length)
-
 
         ##########################################################################
         #
@@ -144,7 +149,7 @@ class ApiFootballDataset(Dataset):
         # print(Xy_data['teams_home_winner'])
         self.y_data = np.empty(shape=[len(df), 3], dtype=np.int8)
 
-        for i, data in enumerate(self.df['teams_home_winner']):
+        for i, data in enumerate(df['teams_home_winner']):
             if data == None:
                 self.y_data[i, 0] = 0
                 self.y_data[i, 1] = 1
@@ -160,7 +165,7 @@ class ApiFootballDataset(Dataset):
                 self.y_data[i, 1] = 0
                 self.y_data[i, 2] = 1
 
-        # for i, data in enumerate(self.df['teams_home_winner']):
+        # for i, data in enumerate(df['teams_home_winner']):
         #     if data != data:
         #         newrow = np.array([0, 1, 0], dtype=np.int8)
         #         self.y_data[i] = newrow
@@ -170,6 +175,9 @@ class ApiFootballDataset(Dataset):
         #     if data == 'False':
         #         newrow = np.array([0, 0, 1], dtype=np.int8)
         #         self.y_data[i] = newrow
+
+        self.y_data = self.y_data.reshape(
+            int(self.y_data.shape[0] / self.seq_len), self.seq_len, self.y_data.shape[1])
 
         print("self.y_data.shape:", self.y_data.shape)
         # print("self.y_data:", self.y_data)
@@ -236,15 +244,27 @@ class ApiFootballDataset(Dataset):
             (normalize_pipeline, self.features.normalize_features),
             (onehotencode_pipeline, self.features.one_hot_encode_features),
             (form_data_pipeline, self.features.form_features),
+            sparse_threshold=1
         )
 
         ##########################################################################
 
         # Fit X_data_pipeline
         self.X_data = self.X_data_pipeline.fit_transform(
-            self.df)
+            df)
 
-        print(self.X_data.shape)
+        del df
+
+        gc.collect()
+
+        X_data_slicer = gen_batches(self.X_data.shape[0], self.seq_len)
+        self.X_slices = [slice for slice in X_data_slicer]
+
+        print("X_data", self.X_data)
+        # transform X_data shape to self.seq_length
+
+        # print("X_data.shape", self.X_data.shape)
+        # print("X_data", self.X_data)
 
         print("X_data_pipeline created")
 
@@ -252,14 +272,19 @@ class ApiFootballDataset(Dataset):
 
     def __len__(self):
 
-        return self.X_data.shape[0]
+        return len(self.X_slices)
 
     def __getitem__(self, idx):
 
+        X_numpy = self.X_data[self.X_slices[idx]].toarray()
+
+        y_numpy = self.y_data[idx]
+
         X_torch = torch.from_numpy(
-            self.X_data[idx].toarray()).type(torch.float32)
-        y_torch = torch.from_numpy(self.y_data[idx]).type(
-            torch.float32).view(1, 3)
+            X_numpy).type(torch.float32)
+        # self.X_data[idx].toarray()).type(torch.float32)
+        y_torch = torch.from_numpy(y_numpy).type(
+            torch.float32).view(1, -1)
 
         # X_torch=torch.from_numpy(
         #     self.X_data[idx]).type(torch.float32)

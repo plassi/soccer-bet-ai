@@ -4,9 +4,10 @@ import torch.nn.functional as F
 import pytorch_lightning as pl
 import numpy as np
 
+
 class extractlastcell(nn.Module):
-    def forward(self,x):
-        out , _ = x
+    def forward(self, x):
+        out, _ = x
         return out[:, -1, :]
 
 
@@ -23,16 +24,17 @@ class FootballOddsLSTM(pl.LightningModule):
         self.input_size = input_features
 
         self.ff = nn.Sequential(
-            nn.LSTM(input_size = self.input_size, hidden_size = h_features, num_layers = h_layers, dropout = dropout),
+            nn.LSTM(input_size=self.input_size, hidden_size=h_features,
+                    num_layers=h_layers, dropout=dropout, ),
             extractlastcell(),
-            nn.Linear(in_features = h_features, out_features = int(h_features / 2)),
-            nn.ReLU(inplace = True),
-            nn.BatchNorm1d(num_features = int(h_features / 2)),
-            nn.Linear(in_features = int(h_features / 2), out_features = 3),
-            nn.Softmax(dim = 1)
+            nn.Linear(in_features=h_features,
+                      out_features=int(h_features / 2)),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm1d(num_features=int(h_features / 2)),
+            nn.Linear(in_features=int(h_features / 2), out_features=3),
+            nn.Softmax(dim=1)
 
         )
-
 
     def forward(self, X):
 
@@ -42,20 +44,9 @@ class FootballOddsLSTM(pl.LightningModule):
 
         X, y = batch[0], batch[1]
 
-        # print(X)
-        # from X print all nan values only
-        # for row in X:
-        #     for col in row:
-        #         for i, value in enumerate(col):
-        #             if torch.isnan(value):
-        #                 print(f"index: {i}, value: {value}")
-        
-
         y_ff_hat = self.ff(X)
 
-        y_ff_hat = y_ff_hat.view(y.shape[0], y.shape[1], y.shape[2])
-
-        loss_ff = F.mse_loss(y_ff_hat, y)
+        loss_ff = F.mse_loss(y_ff_hat, y[:, :, -3:].view(-1, 3))
 
         # Logging to TensorBoard by default
         self.log("train_loss", loss_ff)
@@ -69,23 +60,20 @@ class FootballOddsLSTM(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
 
         X, y = batch[0], batch[1]
+        # print number of X features
 
-        # # print number of X features
+        # print(X)
         # print(X.shape)
 
-        # print("X.shape:", X.shape)
-
-        # print(X.view(X.shape[0], -1, X.shape[1]))
-
-        # print(X.view(X.shape[0], -1, X.shape[1]).shape)
+        # print(X.size(-1))
 
         y_ff_hat = self.ff(X)
 
-        y_ff_hat = y_ff_hat.view(y.shape[0], y.shape[1], y.shape[2])
+        loss_ff = F.mse_loss(y_ff_hat, y[:, :, -3:].view(-1, 3))
 
-        loss_ff = F.mse_loss(y_ff_hat, y)
+        # print("y_ff_hat", y_ff_hat)
 
-        y_ff_hat_argmax = torch.argmax(y_ff_hat, dim=2)
+        y_ff_hat_argmax = torch.argmax(y_ff_hat, dim=1)
 
         hits = 0
         misses = 0
@@ -116,14 +104,13 @@ class FootballOddsLSTM(pl.LightningModule):
 
         # Print and log values
 
+        print(f"\n1 mean: {y_ff_hat_mean[0]}")
+        print(f"X mean: {y_ff_hat_mean[1]}")
+        print(f"2 mean: {y_ff_hat_mean[2]}")
 
-        print(f"\n1 mean: {y_ff_hat_mean[0][0]}")
-        print(f"X mean: {y_ff_hat_mean[0][1]}")
-        print(f"2 mean: {y_ff_hat_mean[0][2]}")
-
-        print(f"1 std: {y_ff_std_mean[0][0]}")
-        print(f"X std: {y_ff_std_mean[0][1]}")
-        print(f"2 std: {y_ff_std_mean[0][2]}")
+        print(f"1 std: {y_ff_std_mean[0]}")
+        print(f"X std: {y_ff_std_mean[1]}")
+        print(f"2 std: {y_ff_std_mean[2]}")
 
         print(f"\nval_loss: {avg_loss.item()}")
         print(f"val_accuracy: {percentage:2f}")
@@ -143,13 +130,13 @@ class FootballOddsLSTM(pl.LightningModule):
         #     "val_2_std": y_ff_std_mean[0][2],
         #     })
 
-        self.log("val_1_mean", y_ff_hat_mean[0][0])
-        self.log("val_X_mean", y_ff_hat_mean[0][1])
-        self.log("val_2_mean", y_ff_hat_mean[0][2])
+        self.log("val_1_mean", y_ff_hat_mean[0])
+        self.log("val_X_mean", y_ff_hat_mean[1])
+        self.log("val_2_mean", y_ff_hat_mean[2])
 
-        self.log("val_1_std", y_ff_std_mean[0][0])
-        self.log("val_X_std", y_ff_std_mean[0][1])
-        self.log("val_2_std", y_ff_std_mean[0][2])
+        self.log("val_1_std", y_ff_std_mean[0])
+        self.log("val_X_std", y_ff_std_mean[1])
+        self.log("val_2_std", y_ff_std_mean[2])
 
         self.log("val_loss", avg_loss)
         self.log("val_accuracy", percentage)
