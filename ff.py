@@ -55,13 +55,18 @@ class FootballOddsFF(pl.LightningModule):
                       out_features=math.ceil(self.input_features / 4)),
             nn.SiLU(),
             nn.Dropout(self.dropout),
+        )
+        self.batch_first_layer = nn.BatchNorm1d(
+            math.ceil(self.input_features / 4))
+
+        self.second_layer = nn.Sequential(
             nn.Linear(in_features=math.ceil(self.input_features / 4),
                       out_features=self.h_features),
             nn.SiLU(),
             nn.Dropout(self.dropout),
         )
-
-        self.batch_first_layer = nn.BatchNorm1d(self.h_features)
+        self.batch_second_layer = nn.BatchNorm1d(
+            self.h_features)
 
         # Create layers list
         self.hidden_layers = nn.ModuleList()
@@ -81,35 +86,49 @@ class FootballOddsFF(pl.LightningModule):
             self.batch_layers.append(nn.BatchNorm1d(self.h_features))
 
         # Create end layers
-        self.end_layers = nn.Sequential(
+        self.second_last_layer = nn.Sequential(
             nn.Linear(in_features=math.ceil(self.h_features),
                       out_features=math.ceil(self.h_features / 4)),
             nn.SiLU(),
+        )
+        self.batch_second_last_layer = nn.BatchNorm1d(
+            math.ceil(self.h_features / 4))
+
+        self.last_layer = nn.Sequential(
             nn.Linear(in_features=math.ceil(self.h_features / 4),
                       out_features=3),
         )
 
         # initialize weights
         self.first_layer.apply(weights_init)
+        self.second_layer.apply(weights_init)
 
         for i in range(self.h_layers):
             self.hidden_layers[i].apply(weights_init)
-        
-        self.end_layers.apply(weights_init)
 
+        self.second_last_layer.apply(weights_init)
+        self.last_layer.apply(weights_init)
 
     def forward(self, X):
 
         y = self.first_layer(X)
-        y = y.view(-1, self.h_features)
+        y = y.view(-1, math.ceil(self.input_features / 4))
         y = self.batch_first_layer(y)
+
+        y = self.second_layer(y)
+        y = y.view(-1, self.h_features)
+        y = self.batch_second_layer(y)
 
         for i in range(self.h_layers):
             y = self.hidden_layers[i](y)
             y = y.view(-1, self.h_features)
             y = self.batch_layers[i](y)
 
-        y = self.end_layers(y)
+        y = self.second_last_layer(y)
+        y = y.view(-1, math.ceil(self.h_features / 4))
+        y = self.batch_second_last_layer(y)
+
+        y = self.last_layer(y)
 
         return y
 
