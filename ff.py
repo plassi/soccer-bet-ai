@@ -4,9 +4,9 @@ import torch.nn.functional as F
 import pytorch_lightning as pl
 import math
 import pickle
-import numpy as np
+# import numpy as np
 
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 from simulation.simulation import Simulation
 
 # %%
@@ -282,7 +282,8 @@ class FootballOddsFF(pl.LightningModule):
             max_drawdown = drawdown.min()
             max_drawdown = min(max_drawdown.items())[1]
 
-            print(f"\nSimulation cash: {cash.iloc[-1]}")
+            print(f"\nSimulation cash_max: {max(cash)}")
+            print(f"Simulation cash_end: {cash.iloc[-1]}")
             print(f"Simulation max drawdown: {max_drawdown}")
             print(f"Simulation bets len: {len(all_bets)}")
             # count amount of values 0 in all_bets
@@ -293,27 +294,29 @@ class FootballOddsFF(pl.LightningModule):
             print(f"Simulation bets draw: {draw_bets}")
             print(f"Simulation bets away: {away_bets}")
 
-            self.log("simulation_cash", cash.iloc[-1])
+            # Log simulation data
+            self.log("Simulation_cash_max", max(cash))
+            self.log("simulation_cash_end", cash.iloc[-1])
             self.log("simulation_max_drawdown", max_drawdown)
             self.log("simulation_bets_len", len(all_bets))
             self.log("simulation_bets_home", home_bets)
             self.log("simulation_bets_draw", draw_bets)
             self.log("simulation_bets_away", away_bets)
 
-            def bar_color(df, color1, color2):
-                return np.where(df.values > 0, color1, color2).T
+            # def bar_color(df, color1, color2):
+            #     return np.where(df.values > 0, color1, color2).T
 
-            if len(all_bets) > 0:
-                # plot cash, drawdown and bets_outcomes
-                cash_plot = cash.reset_index(drop=True)
-                bets_outcomes_plot = all_bets_outcomes.reset_index(drop=True)
-                ax = cash_plot.plot(xlabel='Fixture', ylabel='Cash')
-                bets_outcomes_plot.plot(ax=ax, kind='bar', secondary_y=True, color=bar_color(
-                    all_bets_outcomes, 'g', 'r')).set_xticklabels([])
+            # if len(all_bets) > 0:
+            #     # plot cash, drawdown and bets_outcomes
+            #     cash_plot = cash.reset_index(drop=True)
+            #     bets_outcomes_plot = all_bets_outcomes.reset_index(drop=True)
+            #     ax = cash_plot.plot(xlabel='Fixture', ylabel='Cash')
+            #     bets_outcomes_plot.plot(ax=ax, kind='bar', secondary_y=True, color=bar_color(
+            #         all_bets_outcomes, 'g', 'r')).set_xticklabels([])
 
-                self.logger.experiment.add_figure(
-                    "simulation", plt.gcf(), self.current_epoch)
-                # self.logger.experiment.add_image("simulation", plt.gcf, self.current_epoch)
+            #     self.logger.experiment.add_figure(
+            #         "simulation", plt.gcf(), self.current_epoch)
+            #     # self.logger.experiment.add_image("simulation", plt.gcf, self.current_epoch)
 
         return avg_loss
 
