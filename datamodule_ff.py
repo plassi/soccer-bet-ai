@@ -32,7 +32,7 @@ class FootballOddsDataModule(LightningDataModule):
 
         if os.path.isfile(os.path.join(datapath, dataset_filename)) and cache == True:
             print("load dataset from cache")
-            with open(datapath + dataset_filename, 'rb') as f:
+            with open(datapath + "/" + dataset_filename, 'rb') as f:
                 print(f)
                 self.dataset = pickle.load(f)
         else:
