@@ -16,7 +16,7 @@ import pickle
 # %%
 # add arguments
 parser = ArgumentParser()
-parser.add_argument('--feature_set', default=1, type=int)
+parser.add_argument('--feature_set', default=2, type=int)
 parser.add_argument('--cache', default=True, type=bool)
 parser.add_argument('--h_layers', default=3, type=int)
 parser.add_argument('--h_features', default=1024, type=int)
@@ -26,7 +26,7 @@ parser.add_argument('--precision_16', default=False, type=bool)
 parser.add_argument('--ck_path', default=None, type=str)
 # parser.add_argument('--early_stopping', default=False, type=bool)
 parser.add_argument('--gpus', default=0, type=int)
-parser.add_argument('--datapath', default='../data_ff/', type=str)
+parser.add_argument('--datapath', default='../data_ff', type=str)
 parser.add_argument('--batch_size', default=64, type=int)
 parser.add_argument('--n_workers', default=8, type=int)
 parser.add_argument('--lr', default=1e-5, type=float)

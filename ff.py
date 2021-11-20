@@ -295,7 +295,7 @@ class FootballOddsFF(pl.LightningModule):
             print(f"Simulation bets away: {away_bets}")
 
             # Log simulation data
-            self.log("Simulation_cash_max", max(cash))
+            self.log("simulation_cash_max", max(cash))
             self.log("simulation_cash_end", cash.iloc[-1])
             self.log("simulation_max_drawdown", max_drawdown)
             self.log("simulation_bets_len", len(all_bets))
