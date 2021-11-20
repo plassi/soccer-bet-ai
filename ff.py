@@ -40,7 +40,7 @@ class FootballOddsFF(pl.LightningModule):
         self.simulation = Simulation()
 
         # Get simulation_data with pickle
-        with open(str(datapath) + "simulation_dictionary_ff_" + str(feature_set) + ".pickle", "rb") as f:
+        with open(str(datapath) + "/simulation_dictionary_ff_" + str(feature_set) + ".pickle", "rb") as f:
             self.simulation_data = pickle.load(f)
 
         self.simulation_dictionaries = []
