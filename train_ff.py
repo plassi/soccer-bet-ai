@@ -46,12 +46,22 @@ if args.random_seed is not None:
 #     monitor="val_loss", min_delta=0.0001, patience=int(args.max_epochs / 6), verbose=True, mode="min")
 lr_monitor = LearningRateMonitor(logging_interval='epoch')
 
-checkpoint_callback_1 = ModelCheckpoint(
-    monitor="simulation_cash",
+checkpoint_callback_0 = ModelCheckpoint(
+    monitor="simulation_cash_max",
     save_top_k=args.save_top_k,
     save_last=True,
     mode="max",
-    filename="{epoch:02d}-{step}-{simulation_cash:.2f}-{simulation_max_drawdown:.2f}",
+    filename="{epoch:02d}-{step}-{simulation_cash_max:.2f}-{simulation_cash_end:.2f}-{simulation_max_drawdown:.2f}",
+    verbose=True,
+    every_n_epochs=1
+)
+
+checkpoint_callback_1 = ModelCheckpoint(
+    monitor="simulation_cash_end",
+    save_top_k=args.save_top_k,
+    save_last=False,
+    mode="max",
+    filename="{epoch:02d}-{step}-{simulation_cash_max:.2f}-{simulation_cash_end:.2f}-{simulation_max_drawdown:.2f}",
     verbose=True,
     every_n_epochs=1
 )
@@ -61,7 +71,7 @@ checkpoint_callback_2 = ModelCheckpoint(
     save_top_k=args.save_top_k,
     save_last=False,
     mode="max",
-    filename="{epoch:02d}-{step}-{simulation_cash:.2f}-{simulation_max_drawdown:.2f}",
+    filename="{epoch:02d}-{step}-{simulation_cash_max:.2f}-{simulation_cash_end:.2f}-{simulation_max_drawdown:.2f}",
     verbose=True,
     every_n_epochs=1
 )
@@ -118,7 +128,7 @@ if args.precision_16 is False:
         gpus=args.gpus,
         #  profiler="simple",
         stochastic_weight_avg=True,
-        callbacks=[checkpoint_callback_1, checkpoint_callback_2, lr_monitor],)
+        callbacks=[checkpoint_callback_0, checkpoint_callback_1, checkpoint_callback_2, lr_monitor],)
 elif args.precision_16 is True:
     # train
     trainer = pl.Trainer(  # logger=logger,
@@ -131,7 +141,7 @@ elif args.precision_16 is True:
         precision=16,
         #  profiler="simple",
         stochastic_weight_avg=True,
-        callbacks=[checkpoint_callback_1, checkpoint_callback_2, lr_monitor],)
+        callbacks=[checkpoint_callback_0, checkpoint_callback_1, checkpoint_callback_2, lr_monitor],)
 
 
 # Fit model
